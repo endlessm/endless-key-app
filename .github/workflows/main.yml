@@ -10,11 +10,41 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2019
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Install xapian-core
+        run: |
+          C:\msys64\usr\bin\pacman.exe --verbose --noconfirm -S mingw-w64-x86_64-xapian-core
+
+      # - name: Download Xapian
+      #   run: |
+      #     cd src
+      #     Invoke-WebRequest 'https://oligarchy.co.uk/xapian/1.4.18/xapian-core-1.4.18.tar.xz' -outfile xapian-core-1.4.18.tar.xz
+      #     Extract-7Zip xapian-core-1.4.18.tar.xz .
+      #     Extract-7Zip xapian-core-1.4.18.tar .
+      #     ls
+      #     mv xapian-core-1.4.18 xapian-core
+
+      # - name: Install zlib
+      #   run: |
+      #     powershell -Command "(Invoke-WebRequest -Uri https://git.io/JnHTY -OutFile install_zlib.bat)"; ./install_zlib.bat; del install_zlib.bat
+
+      # - name: Prepare MSVC
+      #   uses: bus1/cabuild/action/msdevshell@v1
+      #   with:
+      #     architecture: x64
+
+      # - name: Build Xapian
+      #   shell: bash
+      #   run: |
+      #     cd src/xapian-core
+      #     ./configure CC="cl -nologo" CXX="$PWD/compile cl -nologo" CXXFLAGS="-EHsc -MD" AR=lib CPPFLAGS="-IC:/Program\ Files/zlib/include" LDFLAGS="-LC:/Program\ Files/zlib/lib" --disable-backend-remote --disable-documentation
+      #     make
+      #     make install
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -28,6 +58,8 @@ jobs:
 
       - name: Install requirements
         run: |
+          $env:Path += ";C:\msys64\usr\bin"
+          $env:Path += ";C:\msys64\mingw64\bin"
           pip install wheel
           pip install -r requirements.txt
           pip install -r requirements-win.txt
@@ -56,6 +88,8 @@ jobs:
 
       - name: Build
         run: |
+          $env:Path += ";C:\msys64\usr\bin"
+          $env:Path += ";C:\msys64\mingw64\bin"
           python kapew.py build
 
       - name: Add package data files to dist

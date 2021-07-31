@@ -35,3 +35,5 @@ urllib3==1.25.11
     # via requests
 virtualenv-api==2.1.18
     # via pyeverywhere
+xapian-bindings==0.1.0
+    # via -r requirements.in
