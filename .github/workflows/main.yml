@@ -73,7 +73,11 @@ jobs:
         run: |
           mv kolibri-electron/out/kolibri-electron-win32-x64 kolibri-windows
 
+      - name: Compress
+        run: Compress-Archive -Path kolibri-windows\* -DestinationPath kolibri-windows.zip
+        shell: pwsh
+
       - uses: actions/upload-artifact@v2
         with:
-          name: "kolibri-windows"
-          path: "kolibri-windows"
+          name: "kolibri-windows.zip"
+          path: "kolibri-windows.zip"
