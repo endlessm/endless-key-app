@@ -23,14 +23,14 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '16'
+          cache: 'yarn'
+          cache-dependency-path: '**/yarn.lock'
 
-      - name: Install requirements
+      - name: Install python requirements
         run: |
           pip install wheel
           pip install -r requirements.txt
           pip install -r requirements-win.txt
-          npm install -g yarn
-          yarn global add @electron-forge/cli
 
       - name: Prep kolibri dist
         run: |
@@ -49,11 +49,17 @@ jobs:
           mv src/kolibri dist/win/Kolibri
           mv dist/win/Kolibri kolibri-electron/src/
 
+      - name: Install electron-forge
+        working-directory: kolibri-electron
+        run: yarn global add @electron-forge/cli
+
       - name: Install electron dependencies
         working-directory: kolibri-electron
-        run: |
-          yarn install
-          yarn make --arch=ia32
+        run: yarn install
+
+      - name: Build electron app
+        working-directory: kolibri-electron
+        run: yarn make --arch=ia32
 
       - name: Create kolibri-windows
         run: |
