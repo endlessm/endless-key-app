@@ -44,11 +44,6 @@ jobs:
         run: |
           python kapew.py build
 
-      - name: Add package data files to dist
-        run: |
-          mv src/kolibri dist/win/Kolibri
-          mv dist/win/Kolibri kolibri-electron/src/
-
       - name: Install electron-forge
         working-directory: kolibri-electron
         run: yarn global add @electron-forge/cli
@@ -64,6 +59,9 @@ jobs:
       - name: Create kolibri-windows
         run: |
           mv kolibri-electron/out/kolibri-electron-win32-ia32 kolibri-windows
+
+          mv src/kolibri dist/win/Kolibri
+          mv dist/win/Kolibri kolibri-windows/resources/app/src/
 
       - uses: actions/upload-artifact@v2
         with:
