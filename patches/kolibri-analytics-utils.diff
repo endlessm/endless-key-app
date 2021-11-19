@@ -1,0 +1,20 @@
+--- kolibri/core/analytics/utils.py	2021-11-19 13:12:34.732520872 +0100
++++ kolibri/core/analytics/utils.py	2021-11-19 13:32:46.855487321 +0100
+@@ -475,6 +475,17 @@
+     facilities = [extract_facility_statistics(f) for f in Facility.objects.all()]
+     data = {"pi": pingback_id, "c": channels, "f": facilities}
+     logger.debug("Statistics data: {}".format(data))
++
++    # telemetry backup
++    import os
++    log_dir = os.path.join(os.environ['KOLIBRI_HOME'], 'logs', 'telemetry_backup')
++    if not os.path.exists(log_dir):
++        os.mkdir(log_dir)
++    now = datetime.datetime.utcnow().strftime('%Y%m%d-%H%M%S')
++    log_file = os.path.join(log_dir, '{}.txt'.format(now))
++    with open(log_file, 'w') as f:
++        json.dump(data, f)
++
+     jsondata = dump_zipped_json(data)
+     response = requests.post(url, data=jsondata, timeout=60)
+     response.raise_for_status()

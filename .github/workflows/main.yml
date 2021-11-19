@@ -44,6 +44,10 @@ jobs:
         run: |
           C:\msys64\usr\bin\patch.exe src\kolibri\utils\server.py patches\kolibri-utils-server.diff
 
+      - name : Patch to log the all telemetry data sent to Learning Equality
+        run: |
+          C:\msys64\usr\bin\patch.exe src\kolibri\core\analytics\utils.py patches\kolibri-analytics-utils.diff
+
       - name: Build
         run: |
           python kapew.py build
