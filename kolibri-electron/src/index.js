@@ -226,7 +226,12 @@ const runKolibri = () => {
   console.log('Running kolibri backend');
   if (django) {
     console.log('Killing previous stalled server');
-    django.kill('SIGTERM');
+    django.kill();
+  }
+
+  const pidFile = path.join(KOLIBRI_HOME, 'server.pid');
+  if (fs.existsSync(pidFile)) {
+    fs.rmSync(pidFile);
   }
 
   django = child_process.spawn(path.join(__dirname, 'Kolibri', 'Kolibri.exe'));
@@ -254,4 +259,9 @@ app.on('ready', () => {
 
 app.on('window-all-closed', () => {
   app.quit();
+
+  const pidFile = path.join(KOLIBRI_HOME, 'server.pid');
+  if (fs.existsSync(pidFile)) {
+    fs.rmSync(pidFile);
+  }
 });
