@@ -77,7 +77,8 @@ def get_latest_kolibri_release(include_prereleases=False):
     release = None
     releases = get_kolibri_releases()
     if include_prereleases:
-        release = releases[0]
+        # FIXME: We don't get the [0] because there's a 0.16.0-alpha1 and we want the 0.15.0-beta3
+        release = releases[1]
     else:
         # find the latest release without an -alpha, -beta, or -rc in the version.
         for k_release in releases:
