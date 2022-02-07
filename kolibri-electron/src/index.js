@@ -27,7 +27,7 @@ let django = null;
 
 let KOLIBRI_HOME_TEMPLATE = '';
 let KOLIBRI_EXTENSIONS = '';
-let KOLIBRI_HOME = path.join(os.homedir(), '.endless-key');
+let KOLIBRI_HOME = '';
 
 function removePidFile() {
   const pidFile = path.join(KOLIBRI_HOME, 'server.pid');
@@ -71,6 +71,8 @@ async function loadKolibriEnv() {
 
   KOLIBRI_EXTENSIONS = path.join(keyData, 'extensions');
   KOLIBRI_HOME_TEMPLATE = path.join(keyData, 'preseeded_kolibri_home');
+  // self contained key, the home is the preseeded_kolibri_home
+  KOLIBRI_HOME = KOLIBRI_HOME_TEMPLATE
 
   env.KOLIBRI_CONTENT_FALLBACK_DIRS = path.join(keyData, 'content');
   env.PYTHONPATH = KOLIBRI_EXTENSIONS;
@@ -117,12 +119,11 @@ async function getPluginVersion() {
   return NULL_PLUGIN_VERSION;
 }
 
-// Checks for the ~/.endless-key/version file and compares with the Endless key
-// kolibri-explore-plugin version. If the version is different, the
-// ~/endless-key folder will be removed.
+// Checks for the KOLIBRI_HOME/version file and compares with the Endless key
+// kolibri-explore-plugin version.
 //
 // Return true if the version file does not match the plugin version or if the
-// .endless-key doesn't exists.
+// version file doesn't exists.
 async function checkVersion() {
   console.log('Checking kolibri-app version file');
   const versionFile = path.join(KOLIBRI_HOME, 'version');
@@ -132,13 +133,12 @@ async function checkVersion() {
   try {
     kolibriHomeVersion = fs.readFileSync(versionFile, 'utf8').trim();
   } catch (error) {
-    console.log('No version file found in .endless-key');
+    console.log(`No version file found in ${KOLIBRI_HOME}`);
   }
 
   console.log(`${kolibriHomeVersion} < ${pluginVersion}`);
   if (kolibriHomeVersion < pluginVersion) {
-    console.log('Newer version, replace the .endless-key directory and cleaning cache');
-    await fsExtra.copy(KOLIBRI_HOME_TEMPLATE, KOLIBRI_HOME);
+    console.log('First launch');
     mainWindow.webContents.session.clearCache();
     return true;
   }
@@ -215,7 +215,7 @@ async function createWindow() {
   const isDataAvailable = await loadKolibriEnv();
 
   await mainWindow.loadFile(await getLoadingScreen());
-  
+
   if (!isDataAvailable) {
     mainWindow.webContents.executeJavaScript('show_error()', true);
   } else {
