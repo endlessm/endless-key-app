@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, Menu, MenuItem } = require('electron');
 const { env } = require('process');
 const path = require('path');
 const child_process = require('child_process');
@@ -192,6 +192,7 @@ async function createWindow() {
     icon: path.join(__dirname, 'icon.png'),
     title: 'Endless Key',
   });
+  createMenu();
   mainWindow.maximize();
   mainWindow.show();
 
@@ -250,6 +251,41 @@ const runKolibri = () => {
   django.on('close', (code) => {
     console.log(`child process exited with code ${code}`);
   });
+};
+
+const pingKolibri = () => {
+  console.log('Kolibri pingback');
+  ping = child_process.spawn(path.join(__dirname, 'Kolibri', 'Kolibri.exe'), ['ping']);
+  ping.stdout.on('data', (data) => {
+    console.log(`Ping: ${data}`);
+  });
+
+  ping.stderr.on('data', (data) => {
+    console.error(`Ping: ${data}`);
+  });
+
+  ping.on('close', (code) => {
+    console.log(`Ping: child process exited with code ${code}`);
+  });
+};
+
+const createMenu = () => {
+ const defaultMenu = Menu.getApplicationMenu();
+
+  const newMenu = new Menu();
+  defaultMenu.items
+    .filter(x => x.role != 'help')
+    .forEach(x => newMenu.append(x));
+
+  newMenu.append(
+    new MenuItem({
+      type: 'normal',
+      label: 'pingback',
+      click: pingKolibri,
+    })
+  );
+
+  Menu.setApplicationMenu(newMenu);
 };
 
 app.on('ready', () => {

@@ -74,3 +74,7 @@ def automatic_provisiondevice():
         options.setdefault("facility_settings", {})
         options.setdefault("device_settings", {})
         call_command("provisiondevice", interactive=False, **options)
+
+def ping():
+    from kolibri.dist.django.core.management import call_command
+    call_command("ping", interactive=False)

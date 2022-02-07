@@ -7,7 +7,7 @@ import sys
 from functools import partial
 
 from config import KOLIBRI_PORT
-from kolibri_tools.utils import start_kolibri_server
+from kolibri_tools.utils import start_kolibri_server, ping
 
 
 class LoggerWriter(object):
@@ -106,5 +106,11 @@ class Application:
 
 
 if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        print(sys.argv)
+        if sys.argv[1] == 'ping':
+            ping()
+        sys.exit(0)
+
     app = Application()
     app.run()
