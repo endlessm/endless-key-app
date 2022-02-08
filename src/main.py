@@ -107,7 +107,6 @@ class Application:
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        print(sys.argv)
         if sys.argv[1] == 'ping':
             # This is needed because in other case the extensions path is not
             # working correctly

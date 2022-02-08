@@ -76,8 +76,8 @@ def automatic_provisiondevice():
         call_command("provisiondevice", interactive=False, **options)
 
 def ping():
-    from kolibri.core.analytics.utils import ping_once
-    from kolibri.utils.time_utils import local_now
-    DEFAULT_SERVER_URL = "https://telemetry.learningequality.org"
-    started = local_now().isoformat()
-    ping_once(started, DEFAULT_SERVER_URL)
+    from kolibri.utils.cli import initialize
+    from kolibri.dist.django.core.management import call_command
+
+    initialize()
+    call_command("ping", interactive=False, once=True)
