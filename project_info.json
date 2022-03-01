@@ -22,6 +22,8 @@
     "html.parser",
     "http.cookies",
     "kolibri.deployment.default.settings.base",
+    "kolibri_tools.endless_key_settings",
+    "kolibri_tools.middleware",
     "logging.config",
     "logging.handlers",
     "pkg_resources.py2_warn"
