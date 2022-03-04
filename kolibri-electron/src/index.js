@@ -184,6 +184,14 @@ const waitForKolibriUp = () => {
   });
 };
 
+function emitResize() {
+  setTimeout(() => {
+    const web = mainWindow.webContents;
+    const js = "window.dispatchEvent(new Event('resize'));";
+    web.executeJavaScript(js, true);
+  }, 300);
+}
+
 async function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1024,
@@ -201,6 +209,13 @@ async function createWindow() {
   mainWindow.on('page-title-updated', (ev) => {
     ev.preventDefault();
   });
+
+  // There's a weird behaviour in the electron app that produces a race
+  // condition with the full-screen resize event, making epub content not
+  // rendering correctly when toggling full-screen. It's needed to reemit the
+  // resize event to fix the layout.
+  mainWindow.on('enter-html-full-screen', emitResize);
+  mainWindow.on('leave-html-full-screen', emitResize);
 
   // Link handler to open external links on default browser
   const windowOpenHandler = ({url}) => {
