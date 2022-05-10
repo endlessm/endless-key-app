@@ -18,6 +18,7 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 const NULL_PLUGIN_VERSION = '0';
 const KOLIBRI = 'http://localhost:5000';
 const KEY_VERSION = 'iguana';
+const userData = app.getPath("userData");
 let pingTimeout = 40;
 let mainWindow = null;
 let loadRetries = 0;
@@ -28,7 +29,7 @@ let django = null;
 
 let KOLIBRI_HOME_TEMPLATE = '';
 let KOLIBRI_EXTENSIONS = path.join(__dirname, 'Kolibri', 'kolibri', 'dist');
-let KOLIBRI_HOME = path.join(os.homedir(), `.endless-key-${KEY_VERSION}`);
+let KOLIBRI_HOME = path.join(userData, `endless-key-${KEY_VERSION}`);
 const AUTOPROVISION_FILE = path.join(__dirname, 'automatic_provision.json');
 
 function removePidFile() {
@@ -214,7 +215,6 @@ async function createWindow() {
   });
   mainWindow.maximize();
   mainWindow.show();
-
 
   mainWindow.on('page-title-updated', (ev) => {
     ev.preventDefault();
