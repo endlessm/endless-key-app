@@ -5,7 +5,7 @@
   xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10">
   <Identity
-    Name="EndlessOSFoundation.EndlessKey.app"
+    Name="EndlessOSFoundation.EndlessKey"
     Version="1.0.0.0"
     Publisher="CN=EOSF Microsoft Publishing 2022, O=Endless OS Foundation LLC"
     ProcessorArchitecture="x64" />
