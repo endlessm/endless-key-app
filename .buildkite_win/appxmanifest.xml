@@ -11,7 +11,7 @@
     ProcessorArchitecture="x64" />
   <Properties>
     <DisplayName>Endless Key</DisplayName>
-    <PublisherDisplayName>Endless OS Foundation LLC</PublisherDisplayName>
+    <PublisherDisplayName>Endless OS Foundation</PublisherDisplayName>
     <Description>Endless Key</Description>
     <Logo>resources/app/src/icon.png</Logo>
   </Properties>
