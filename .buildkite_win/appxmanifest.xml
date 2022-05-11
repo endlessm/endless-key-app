@@ -7,7 +7,7 @@
   <Identity
     Name="EndlessOSFoundation.EndlessKey"
     Version="1.0.0.0"
-    Publisher="CN=EOSF Microsoft Publishing 2022, O=Endless OS Foundation LLC"
+    Publisher="CN=4B001A25-B854-44D9-BAD3-8AD7FC7A8761"
     ProcessorArchitecture="x64" />
   <Properties>
     <DisplayName>Endless Key</DisplayName>
