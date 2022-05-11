@@ -4,7 +4,11 @@
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10">
-  <Identity Name="EndlessOSFoundation.EndlessKey.app" Version="0.1.10.1" Publisher="CN=EOSF Microsoft Publishing 2022, O=Endless OS Foundation LLC" ProcessorArchitecture="x64" />
+  <Identity
+    Name="EndlessOSFoundation.EndlessKey.app"
+    Version="0.1.10.1"
+    Publisher="CN=EOSF Microsoft Publishing 2022, O=Endless OS Foundation LLC"
+    ProcessorArchitecture="x64" />
   <Properties>
     <DisplayName>Endless Key</DisplayName>
     <PublisherDisplayName>Endless OS Foundation LLC</PublisherDisplayName>
@@ -15,16 +19,29 @@
     <Resource Language="en-us" />
   </Resources>
   <Dependencies>
-    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.14316.0" MaxVersionTested="10.0.19041.0" />
+    <TargetDeviceFamily
+      Name="Windows.Desktop"
+      MinVersion="10.0.14316.0"
+      MaxVersionTested="10.0.19041.0" />
   </Dependencies>
   <Capabilities>
     <rescap:Capability Name="runFullTrust"/>
   </Capabilities>
   <Applications>
-    <Application Id="endlesskeyapp" Executable="kolibri-electron.exe" EntryPoint="Windows.FullTrustApplication">
-      <uap3:VisualElements DisplayName="Endless Key" Description="Endless Key" Square150x150Logo="resources/app/src/icon.png" Square44x44Logo="resources/app/src/icon.png" BackgroundColor="#FFFFFF" />
+    <Application
+      Id="endlesskeyapp"
+      Executable="kolibri-electron.exe"
+      EntryPoint="Windows.FullTrustApplication">
+      <uap3:VisualElements
+        DisplayName="Endless Key"
+        Description="Endless Key"
+        Square150x150Logo="resources/app/src/icon.png"
+        Square44x44Logo="resources/app/src/icon.png"
+        BackgroundColor="#FFFFFF" />
       <Extensions>
-        <uap3:Extension Category="windows.appExecutionAlias" EntryPoint="Windows.FullTrustApplication">
+        <uap3:Extension
+          Category="windows.appExecutionAlias"
+          EntryPoint="Windows.FullTrustApplication">
           <uap3:AppExecutionAlias>
             <desktop:ExecutionAlias Alias="endless-key.exe" />
           </uap3:AppExecutionAlias>
