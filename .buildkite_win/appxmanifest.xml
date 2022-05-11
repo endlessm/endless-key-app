@@ -8,7 +8,7 @@
     Name="EndlessOSFoundation.EndlessKey"
     Version="1.0.0.0"
     Publisher="CN=4B001A25-B854-44D9-BAD3-8AD7FC7A8761"
-    ProcessorArchitecture="x64" />
+    ProcessorArchitecture="x86" />
   <Properties>
     <DisplayName>Endless Key</DisplayName>
     <PublisherDisplayName>Endless OS Foundation</PublisherDisplayName>
