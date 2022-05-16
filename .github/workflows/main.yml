@@ -157,3 +157,61 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: kolibri-windows.zip endlesskey.appx
+
+      - name: Checkout StoreBroker
+        uses: actions/checkout@v3
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          repository: microsoft/StoreBroker
+          path: StoreBroker
+
+      - name: Create and push the Application Payload for Microsoft store
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        env:
+          MS_TENANT_ID: ${{ secrets.MSPARTNER_TENANTID }}
+          MS_CLIENT_ID: ${{ secrets.MSPARTNER_CLIENTID }}
+          MS_CLIENT_PWD: ${{ secrets.MSPARTNER_CLIENTPWD }}
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module -Name StoreBroker
+
+          $APP_ID = "9PDLJFW5D4JR"
+          $SubmissionRoot = "MSSubmission"
+
+          $PWD = ConvertTo-SecureString $env:MS_CLIENT_PWD -AsPlainText -Force
+          $Credentials = New-Object System.Management.Automation.PSCredential ($env:MS_CLIENT_ID, $PWD)
+          Set-StoreBrokerAuthentication -TenantId $env:MS_TENANT_ID -Credential $Credentials -Verbose
+
+          New-Item -Path "MSAppPayload" -ItemType Directory
+
+          # Bring the screenshots
+          Copy-Item -Path ".buildkite_win/PDPs" -Destination "MSAppPayload/" -Recurse -Force
+
+          # Get current config and PDPs from Microsoft store
+          New-StoreBrokerConfigFile -Path "MSAppPayload/SBConfig.json" -AppId $APP_ID
+          $release_str = Get-Date -Format "yyyyMMdd"
+          .\StoreBroker\Extensions\ConvertFrom-ExistingSubmission.ps1 -AppId $APP_ID -Release $release_str -OutPath "MSAppPayload/PDPs"
+          # Wipe out the Release string in PDP.xml to avoid the release version folder
+          [xml]$xmlDoc = Get-Content "MSAppPayload/PDPs/en-us/PDP.xml"
+          $xmlDoc.ProductDescription.Release = ""
+          $xmlDoc.Save( "MSAppPayload/PDPs/en-us/PDP.xml" )
+
+          New-SubmissionPackage `
+            -ConfigPath "MSAppPayload/SBConfig.json" `
+            -PDPRootPath "MSAppPayload/PDPs" `
+            -ImagesRootPath "MSAppPayload/PDPs" `
+            -AppxPath endlesskey.appx `
+            -MediaFallbackLanguage en-US `
+            -OutPath $SubmissionRoot `
+            -OutName endlesskey `
+            -Verbose
+
+          $submissionId, $submissionUrl = Update-ApplicationSubmission `
+            -AppId $APP_ID `
+            -SubmissionDataPath "$SubmissionRoot/endlesskey.json" `
+            -PackagePath "$SubmissionRoot/endlesskey.zip" `
+            -ReplacePackages `
+            -AutoCommit `
+            -Force `
+            -Verbose
