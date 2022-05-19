@@ -67,6 +67,7 @@ async function getEndlessKeyDataPath() {
 async function loadKolibriEnv() {
   const keyData = await getEndlessKeyDataPath();
   env.KOLIBRI_HOME = KOLIBRI_HOME;
+  env.PYTHONPATH = KOLIBRI_EXTENSIONS;
 
   if (!keyData) {
     // Copy the provision file because Kolibri removes after applying
