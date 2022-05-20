@@ -86,11 +86,11 @@ async function loadKolibriEnv() {
 
   if (fs.existsSync(path.join(keyData, 'extensions'))) {
     KOLIBRI_EXTENSIONS = path.join(keyData, 'extensions');
+    env.PYTHONPATH = KOLIBRI_EXTENSIONS;
   }
   KOLIBRI_HOME_TEMPLATE = path.join(keyData, 'preseeded_kolibri_home');
 
   env.KOLIBRI_CONTENT_FALLBACK_DIRS = path.join(keyData, 'content');
-  env.PYTHONPATH = KOLIBRI_EXTENSIONS;
 
   return true;
 }
