@@ -29,16 +29,13 @@ jobs:
       - name: Install python requirements
         run: |
           pip install wheel
-          pip install -r requirements.txt
-          pip install -r requirements-win.txt
-
 
       - name: Checkout pyinstaller
         uses: actions/checkout@v2
         with:
           repository: pyinstaller/pyinstaller
           path: pyinstaller
-          ref: v4.9
+          ref: v5.1
 
       - name: Build pyinstaller bootloader
         run: |
@@ -54,7 +51,7 @@ jobs:
 
       - name: Prep kolibri dist
         run: |
-          python kapew.py prep-kolibri-dist --skip-preseed --exclude-prereleases
+          pip install kolibri --target="src"
 
       - name: Add kolibri_zim_plugin to Kolibri's dist packages
         run: |
@@ -80,7 +77,7 @@ jobs:
 
       - name: Build
         run: |
-          python kapew.py build
+          pyinstaller.exe --noconfirm main.spec
 
       - name: Install electron-forge
         working-directory: kolibri-electron
@@ -98,8 +95,8 @@ jobs:
         run: |
           mv kolibri-electron/out/kolibri-electron-win32-ia32 kolibri-windows
 
-          mv src/kolibri dist/win/Kolibri
-          mv dist/win/Kolibri kolibri-windows/resources/app/src/
+          mv src/kolibri dist/Kolibri/kolibri
+          mv dist/Kolibri kolibri-windows/resources/app/src/
           mv src/apps-bundle kolibri-windows/resources/app/src/
 
       - name: Compress
