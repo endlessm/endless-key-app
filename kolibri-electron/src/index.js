@@ -64,6 +64,20 @@ async function getEndlessKeyDataPath() {
   }
 }
 
+async function showContentSelection() {
+  const keyData = await getEndlessKeyDataPath();
+  if (!keyData) {
+    mainWindow.webContents.executeJavaScript('showContentChoice(true)', true);
+  } else {
+    mainWindow.webContents.executeJavaScript('showContentChoice(false)', true);
+    loadKolibriEnv().then(() => {
+      runKolibri();
+      waitForKolibriUp(mainWindow);
+    });
+  }
+  return false;
+}
+
 async function loadKolibriEnv() {
   const keyData = await getEndlessKeyDataPath();
   env.KOLIBRI_HOME = KOLIBRI_HOME;
@@ -90,8 +104,10 @@ async function loadKolibriEnv() {
     env.PYTHONPATH = KOLIBRI_EXTENSIONS;
   }
   KOLIBRI_HOME_TEMPLATE = path.join(keyData, 'preseeded_kolibri_home');
+  preseedHome();
+  await checkVersion();
 
-  env.KOLIBRI_CONTENT_FALLBACK_DIRS = path.join(keyData, 'content');
+  env.KOLIBRI_CONTENT_DIR = path.join(keyData, 'content');
 
   return true;
 }
@@ -134,9 +150,15 @@ async function getPluginVersion() {
   return NULL_PLUGIN_VERSION;
 }
 
+async function preseedHome() {
+  if (fs.existsSync(KOLIBRI_HOME_TEMPLATE) && !fs.existsSync(KOLIBRI_HOME)) {
+    await fsExtra.copy(KOLIBRI_HOME_TEMPLATE, KOLIBRI_HOME);
+  }
+}
+
 // Checks for the ~/.endless-key/version file and compares with the Endless key
 // kolibri-explore-plugin version. If the version is different, the
-// ~/endless-key folder will be removed.
+// cache will be cleared.
 //
 // Return true if the version file does not match the plugin version or if the
 // .endless-key doesn't exists.
@@ -154,12 +176,7 @@ async function checkVersion() {
 
   console.log(`${kolibriHomeVersion} < ${pluginVersion}`);
   if (kolibriHomeVersion < pluginVersion) {
-    console.log('Newer version, replace the .endless-key directory and cleaning cache');
-    await fsExtra.remove(KOLIBRI_HOME);
-
-    if (fs.existsSync(KOLIBRI_HOME_TEMPLATE)) {
-      await fsExtra.copy(KOLIBRI_HOME_TEMPLATE, KOLIBRI_HOME);
-    }
+    console.log('Newer version, cleaning cache');
     mainWindow.webContents.session.clearCache();
     return true;
   }
@@ -227,26 +244,28 @@ async function createWindow() {
     if (url.startsWith('file:') || url.startsWith(KOLIBRI) || isRelative(url)) {
       return {action: 'allow'};
     }
+
     shell.openExternal(url);
     return {action: 'deny'};
   };
   mainWindow.webContents.setWindowOpenHandler(windowOpenHandler);
-
-  const isDataAvailable = await loadKolibriEnv();
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    console.log(`### ${url}`);
+    if (url.startsWith('http://connect-key') || url.startsWith('http://download-content')) {
+      loadKolibriEnv().then(() => {
+        mainWindow.webContents.executeJavaScript('showContentChoice(false)', true);
+        runKolibri();
+        waitForKolibriUp(mainWindow);
+      });
+      event.preventDefault();
+    }
+  });
 
   await mainWindow.loadFile(await getLoadingScreen());
 
-  if (!isDataAvailable) {
-    console.log('No Endless Key data found. Loading default Kolibri');
-  } else {
-    const firstLaunch = await checkVersion();
-    if (firstLaunch) {
-      mainWindow.webContents.executeJavaScript('firstLaunch()', true);
-    }
-  }
-  waitForKolibriUp(mainWindow);
+  await showContentSelection();
 
-  return isDataAvailable;
+  return false;
 };
 
 const runKolibri = () => {
@@ -273,10 +292,7 @@ const runKolibri = () => {
 };
 
 app.on('ready', () => {
-  createWindow()
-    .then((isDataAvailable) => {
-      runKolibri();
-    });
+  createWindow();
 });
 
 app.on('window-all-closed', () => {
