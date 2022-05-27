@@ -114,7 +114,7 @@ jobs:
 
       - name: Packaging
         run: |
-          $describe = (git describe --always --tags --match 'v*')
+          $describe = (git describe --always --tags --long --match 'v*')
           $ver_arr = $describe -split '[-v]'
           $ver_str = $ver_arr[1] + "." + $ver_arr[2]
 
