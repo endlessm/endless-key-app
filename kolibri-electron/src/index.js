@@ -31,6 +31,11 @@ let KOLIBRI_EXTENSIONS = path.join(__dirname, 'Kolibri', 'kolibri', 'dist');
 let KOLIBRI_HOME = path.join(userData, 'endless-key');
 const AUTOPROVISION_FILE = path.join(__dirname, 'automatic_provision.json');
 
+const LOCK_FILE = {
+  handler: null,
+  path: null,
+};
+
 function removePidFile() {
   const pidFile = path.join(KOLIBRI_HOME, 'server.pid');
   if (fs.existsSync(pidFile)) {
@@ -92,6 +97,10 @@ async function loadKolibriEnv() {
   KOLIBRI_HOME_TEMPLATE = path.join(keyData, 'preseeded_kolibri_home');
 
   env.KOLIBRI_CONTENT_FALLBACK_DIRS = path.join(keyData, 'content');
+
+  // Lock USB
+  LOCK_FILE.path = path.join(keyData, 'lock');
+  LOCK_FILE.handler = await fsPromises.open(LOCK_FILE.path, 'w');
 
   return true;
 }
@@ -282,4 +291,10 @@ app.on('ready', () => {
 app.on('window-all-closed', () => {
   app.quit();
   removePidFile();
+  if (LOCK_FILE.handler) {
+    LOCK_FILE.handler.close();
+    if (fs.existsSync(LOCK_FILE.path)) {
+      fs.rmSync(LOCK_FILE.path);
+    }
+  }
 });
