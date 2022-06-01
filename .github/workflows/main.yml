@@ -94,6 +94,50 @@ jobs:
         working-directory: kolibri-electron
         run: yarn make --arch=ia32
 
+      - name: Kolibri cleanup
+        run: |
+          $KOLIBRI_MODULE_PATH = "src/kolibri"
+
+          & ./cleanup-unused-locales.py -l `
+          ${KOLIBRI_MODULE_PATH}/locale `
+          ${KOLIBRI_MODULE_PATH}/dist/django/conf/locale `
+          ${KOLIBRI_MODULE_PATH}/dist/django/contrib/admin/locale `
+          ${KOLIBRI_MODULE_PATH}/dist/django/contrib/admindocs/locale `
+          ${KOLIBRI_MODULE_PATH}/dist/django/contrib/auth/locale `
+          ${KOLIBRI_MODULE_PATH}/dist/django/contrib/contenttypes/locale `
+          ${KOLIBRI_MODULE_PATH}/dist/django/contrib/flatpages/locale `
+          ${KOLIBRI_MODULE_PATH}/dist/django/contrib/gis/locale `
+          ${KOLIBRI_MODULE_PATH}/dist/django/contrib/humanize/locale `
+          ${KOLIBRI_MODULE_PATH}/dist/django/contrib/postgres/locale `
+          ${KOLIBRI_MODULE_PATH}/dist/django/contrib/redirects/locale `
+          ${KOLIBRI_MODULE_PATH}/dist/django/contrib/sessions/locale `
+          ${KOLIBRI_MODULE_PATH}/dist/django/contrib/sites/locale `
+          ${KOLIBRI_MODULE_PATH}/dist/django_filters/locale `
+          ${KOLIBRI_MODULE_PATH}/dist/mptt/locale `
+          ${KOLIBRI_MODULE_PATH}/dist/rest_framework/locale
+
+          rm -r -fo `
+          ${KOLIBRI_MODULE_PATH}/dist/cext/cp27, `
+          ${KOLIBRI_MODULE_PATH}/dist/cext/cp34, `
+          ${KOLIBRI_MODULE_PATH}/dist/cext/cp35, `
+          ${KOLIBRI_MODULE_PATH}/dist/cext/cp36, `
+          ${KOLIBRI_MODULE_PATH}/dist/cext/cp38, `
+          ${KOLIBRI_MODULE_PATH}/dist/cext/cp39, `
+          ${KOLIBRI_MODULE_PATH}/dist/cext/*/*Linux*
+
+          rm -r -fo `
+          ${KOLIBRI_MODULE_PATH}/dist/cheroot/test, `
+          ${KOLIBRI_MODULE_PATH}/dist/colorlog/tests, `
+          ${KOLIBRI_MODULE_PATH}/dist/django_js_reverse/tests, `
+          ${KOLIBRI_MODULE_PATH}/dist/future/backports/test, `
+          ${KOLIBRI_MODULE_PATH}/dist/future/moves/test, `
+          ${KOLIBRI_MODULE_PATH}/dist/ipware/tests, `
+          ${KOLIBRI_MODULE_PATH}/dist/magicbus/test, `
+          ${KOLIBRI_MODULE_PATH}/dist/more_itertools/tests, `
+          ${KOLIBRI_MODULE_PATH}/dist/past/tests, `
+          ${KOLIBRI_MODULE_PATH}/dist/py2only, `
+          ${KOLIBRI_MODULE_PATH}/dist/sqlalchemy/testing
+
       - name: Create kolibri-windows
         run: |
           mv kolibri-electron/out/kolibri-electron-win32-ia32 kolibri-windows
