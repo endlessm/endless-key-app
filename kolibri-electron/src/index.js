@@ -18,10 +18,8 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
 const NULL_PLUGIN_VERSION = '0';
 const KOLIBRI = 'http://localhost:5000';
 const userData = app.getPath("userData");
-let pingTimeout = 40;
 let mainWindow = null;
 let loadRetries = 0;
-let timeSpent = 0;
 let maxRetries = 3;
 
 let django = null;
@@ -180,20 +178,8 @@ async function updateVersion() {
 const waitForKolibriUp = () => {
   console.log('Kolibri server not yet started, checking again in one second...');
 
-  if (timeSpent > pingTimeout) {
-    const contents = mainWindow.webContents;
-
-    if (loadRetries < maxRetries) {
-      console.log('Kolibri server not starting, retrying...');
-      contents.executeJavaScript('show_retry()', true);
-      loadRetries++;
-      timeSpent = 0;
-      runKolibri();
-      waitForKolibriUp(mainWindow);
-    } else {
-      contents.executeJavaScript('show_error()', true);
-    }
-
+  if (loadRetries > maxRetries) {
+    // Do not check anymore if the server is not starting
     return;
   }
 
@@ -202,7 +188,7 @@ const waitForKolibriUp = () => {
     updateVersion();
   }).on("error", (error) => {
     console.log("Error: " + error.message);
-    setTimeout(() => { waitForKolibriUp(mainWindow); timeSpent++; }, 1000);
+    setTimeout(() => { waitForKolibriUp(mainWindow); }, 1000);
   });
 };
 
@@ -236,6 +222,7 @@ async function createWindow() {
   mainWindow.webContents.setWindowOpenHandler(windowOpenHandler);
 
   const isDataAvailable = await loadKolibriEnv();
+  runKolibri();
 
   await mainWindow.loadFile(await getLoadingScreen());
 
@@ -247,10 +234,24 @@ async function createWindow() {
       mainWindow.webContents.executeJavaScript('firstLaunch()', true);
     }
   }
-  waitForKolibriUp(mainWindow);
 
+  waitForKolibriUp(mainWindow);
   return isDataAvailable;
 };
+
+const reloadKolibri = () => {
+  const contents = mainWindow.webContents;
+
+  if (loadRetries < maxRetries) {
+    console.log('Kolibri server not starting, retrying...');
+    contents.executeJavaScript('show_retry()', true);
+    loadRetries++;
+    runKolibri();
+  } else {
+    console.log('Kolibri server not starting');
+    contents.executeJavaScript('show_error()', true);
+  }
+}
 
 const runKolibri = () => {
   console.log('Running kolibri backend');
@@ -273,13 +274,20 @@ const runKolibri = () => {
   django.on('close', (code) => {
     console.log(`child process exited with code ${code}`);
   });
+  django.on('exit', (code, signal) => {
+    // Try to reload the backend if it ends for some reason, do not reload if
+    // it's a signal
+    if (signal) {
+      return;
+    }
+
+    console.log(`Kolibri server ended with code: ${code}`);
+    reloadKolibri();
+  });
 };
 
 app.on('ready', () => {
-  createWindow()
-    .then((isDataAvailable) => {
-      runKolibri();
-    });
+  createWindow();
 });
 
 app.on('window-all-closed', () => {
