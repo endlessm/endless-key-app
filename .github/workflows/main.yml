@@ -185,17 +185,22 @@ jobs:
 
           New-Item -Path "MSAppPayload" -ItemType Directory
 
-          # Bring the screenshots
-          Copy-Item -Path ".buildkite_win/PDPs" -Destination "MSAppPayload/" -Recurse -Force
-
           # Get current config and PDPs from Microsoft store
           New-StoreBrokerConfigFile -Path "MSAppPayload/SBConfig.json" -AppId $APP_ID
           $release_str = Get-Date -Format "yyyyMMdd"
           .\StoreBroker\Extensions\ConvertFrom-ExistingSubmission.ps1 -AppId $APP_ID -Release $release_str -OutPath "MSAppPayload/PDPs"
+
           # Wipe out the Release string in PDP.xml to avoid the release version folder
           [xml]$xmlDoc = Get-Content "MSAppPayload/PDPs/en-us/PDP.xml"
           $xmlDoc.ProductDescription.Release = ""
           $xmlDoc.Save( "MSAppPayload/PDPs/en-us/PDP.xml" )
+
+          echo "Going to create dummy screenshots for Application Payload creation:"
+          $xmlDoc.ProductDescription.ScreenshotCaptions.Caption | ForEach-Object {
+            $dummy_screenshot = "MSAppPayload/PDPs/en-us/" + $_.DesktopImage
+            echo $dummy_screenshot
+            echo NULL > $dummy_screenshot
+          }
 
           New-SubmissionPackage `
             -ConfigPath "MSAppPayload/SBConfig.json" `
