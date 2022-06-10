@@ -163,13 +163,13 @@ jobs:
           $ver_str = $ver_arr[1] + "." + $ver_arr[2]
 
           echo "Set package's version as $ver_str"
-          $src = ".buildkite_win/appxmanifest.xml"
+          $src = "build_winapp/appxmanifest.xml"
           $dst = "kolibri-windows/appxmanifest.xml"
           [xml]$xmlDoc = Get-Content $src
           $xmlDoc.Package.Identity.Version = $ver_str
           $xmlDoc.Save($dst)
 
-          Copy-Item -Path ".buildkite_win/assets" -Destination "kolibri-windows/" -recurse
+          Copy-Item -Path "build_winapp/assets" -Destination "kolibri-windows/" -recurse
           & "${Env:ProgramFiles(x86)}\Windows Kits\10\App Certification Kit\makeappx.exe" pack /d kolibri-windows /p endlesskey.appx
 
       - name: Upload unsigned package
@@ -186,7 +186,7 @@ jobs:
           SIGN_PHRASE: ${{ secrets.SELFSIGN_PHRASE }}
         run: |
           & "${Env:ProgramFiles(x86)}\Windows Kits\10\App Certification Kit\signtool.exe" `
-            sign /fd SHA256 /a /f .buildkite_win/selfsign.pfx /p $env:SIGN_PHRASE endlesskey.appx
+            sign /fd SHA256 /a /f build_winapp/selfsign.pfx /p $env:SIGN_PHRASE endlesskey.appx
           mv endlesskey.appx endlesskey.selfsigned.appx
 
       - name: Upload self-signed package for testing
