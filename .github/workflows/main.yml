@@ -200,7 +200,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: kolibri-windows.zip endlesskey.appx
+          files: |
+            kolibri-windows.zip
+            endlesskey.selfsigned.appx
 
       - name: Checkout StoreBroker
         uses: actions/checkout@v3
