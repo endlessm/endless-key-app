@@ -1,0 +1,43 @@
+name: Tag Weekly
+
+on:
+  schedule:
+    - cron: '32 18 * * SAT'
+  workflow_dispatch:
+
+jobs:
+  weekly_tag:
+    if: github.event.schedule
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          # Need to fetch everything so that 'git describe' can see the tags
+          fetch-depth: 0
+
+      - name: Have a new tag string
+        id: have_new_tag_string
+        run: |
+          $describe = (git describe --always --tags --long --match 'v*')
+          $ver_arr = $describe -split '[-v\.]'
+          $major = $ver_arr[1]
+          $minor = $ver_arr[2]
+          $build = $ver_arr[3] -as [int]
+          $revision = $ver_arr[4]
+          # Do not create a new tag if latest tag is at HEAD
+          if ($revision -ne 0) {
+            $tag_str = "v" + $major + "." + $minor + "." + ($build + 1)
+          } else {
+            $tag_str = ""
+          }
+          echo "::set-output name=tag_string::$tag_str"
+
+      - name: Create a new tag
+        if: steps.have_new_tag_string.outputs.tag_string
+        uses: negz/create-tag@v1
+        with:
+          version: ${{ steps.have_new_tag_string.outputs.tag_string }}
+          message: "Release ${{ steps.have_new_tag_string.outputs.tag_string }}"
+          token: ${{ secrets.GITHUB_TOKEN }}
