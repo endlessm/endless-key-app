@@ -7,7 +7,6 @@ on:
 
 jobs:
   weekly_tag:
-    if: github.event.schedule
     runs-on: windows-latest
 
     steps:
