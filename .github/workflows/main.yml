@@ -150,12 +150,6 @@ jobs:
         run: Compress-Archive -Path kolibri-windows\* -DestinationPath kolibri-windows.zip
         shell: pwsh
 
-      - name: Upload ZIP
-        uses: actions/upload-artifact@v2
-        with:
-          name: "kolibri-windows.zip"
-          path: "kolibri-windows.zip"
-
       - name: Packaging
         run: |
           $describe = (git describe --always --tags --long --match 'v*')
@@ -172,101 +166,9 @@ jobs:
           Copy-Item -Path "build_winapp/assets" -Destination "kolibri-windows/" -recurse
           & "${Env:ProgramFiles(x86)}\Windows Kits\10\App Certification Kit\makeappx.exe" pack /d kolibri-windows /p endlesskey.appx
 
-      - name: Upload unsigned package
-        uses: actions/upload-artifact@v2
-        with:
-          name: "endlesskey.appx"
-          path: "endlesskey.appx"
-
-      - name: Sign artifact for testing
-        id: sign_for_testing
-        if: startsWith(github.ref, 'refs/tags/') == false
-        shell: pwsh
-        env:
-          SIGN_PHRASE: ${{ secrets.SELFSIGN_PHRASE }}
-        run: |
-          & "${Env:ProgramFiles(x86)}\Windows Kits\10\App Certification Kit\signtool.exe" `
-            sign /fd SHA256 /a /f build_winapp/selfsign.pfx /p $env:SIGN_PHRASE endlesskey.appx
-          mv endlesskey.appx endlesskey.selfsigned.appx
-
-      - name: Upload self-signed package for testing
-        if: steps.sign_for_testing.outcome == 'success'
-        uses: actions/upload-artifact@v2
-        with:
-          name: "endlesskey.selfsigned.appx"
-          path: "endlesskey.selfsigned.appx"
-
       - name: Release
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
             kolibri-windows.zip
-            endlesskey.selfsigned.appx
-
-      - name: Checkout StoreBroker
-        uses: actions/checkout@v3
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          repository: microsoft/StoreBroker
-          path: StoreBroker
-
-      - name: Create and push the Application Payload to Package Flight on Microsoft store
-        if: startsWith(github.ref, 'refs/tags/')
-        shell: pwsh
-        env:
-          MS_TENANT_ID: ${{ secrets.MSPARTNER_TENANTID }}
-          MS_CLIENT_ID: ${{ secrets.MSPARTNER_CLIENTID }}
-          MS_CLIENT_PWD: ${{ secrets.MSPARTNER_CLIENTPWD }}
-        run: |
-          Set-PSRepository PSGallery -InstallationPolicy Trusted
-          Install-Module -Name StoreBroker
-
-          $APP_ID = "9PDLJFW5D4JR"
-          $SubmissionRoot = "MSSubmission"
-
-          $PWD = ConvertTo-SecureString $env:MS_CLIENT_PWD -AsPlainText -Force
-          $Credentials = New-Object System.Management.Automation.PSCredential ($env:MS_CLIENT_ID, $PWD)
-          Set-StoreBrokerAuthentication -TenantId $env:MS_TENANT_ID -Credential $Credentials -Verbose
-
-          New-Item -Path "MSAppPayload" -ItemType Directory
-
-          # Get current config and PDPs from Microsoft store
-          New-StoreBrokerConfigFile -Path "MSAppPayload/SBConfig.json" -AppId $APP_ID
-          $release_str = Get-Date -Format "yyyyMMdd"
-          .\StoreBroker\Extensions\ConvertFrom-ExistingSubmission.ps1 -AppId $APP_ID -Release $release_str -OutPath "MSAppPayload/PDPs"
-
-          # Wipe out the Release string in PDP.xml to avoid the release version folder
-          [xml]$xmlDoc = Get-Content "MSAppPayload/PDPs/en-us/PDP.xml"
-          $xmlDoc.ProductDescription.Release = ""
-          $xmlDoc.Save( "MSAppPayload/PDPs/en-us/PDP.xml" )
-
-          echo "Going to create dummy screenshots for Application Payload creation:"
-          $xmlDoc.ProductDescription.ScreenshotCaptions.Caption | ForEach-Object {
-            $dummy_screenshot = "MSAppPayload/PDPs/en-us/" + $_.DesktopImage
-            echo $dummy_screenshot
-            echo NULL > $dummy_screenshot
-          }
-
-          New-SubmissionPackage `
-            -ConfigPath "MSAppPayload/SBConfig.json" `
-            -PDPRootPath "MSAppPayload/PDPs" `
-            -ImagesRootPath "MSAppPayload/PDPs" `
-            -AppxPath endlesskey.appx `
-            -MediaFallbackLanguage en-US `
-            -OutPath $SubmissionRoot `
-            -OutName endlesskey `
-            -Verbose
-
-          $FLIGHT_NAME = "Alpha Test Flight"
-          $flight = Get-ApplicationFlights -AppId $APP_ID | Where-Object { $_.friendlyName -eq $FLIGHT_NAME }
-
-          Update-ApplicationFlightSubmission `
-            -AppId $APP_ID `
-            -FlightId $flight.flightId `
-            -SubmissionDataPath "$SubmissionRoot/endlesskey.json" `
-            -PackagePath "$SubmissionRoot/endlesskey.zip" `
-            -ReplacePackages `
-            -AutoCommit `
-            -Force `
-            -Verbose
+            endlesskey.appx
