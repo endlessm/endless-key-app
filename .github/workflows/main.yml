@@ -205,15 +205,25 @@ jobs:
             kolibri-windows.zip
             endlesskey.appx
 
+
+  push_to_MS_store:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: windows-latest
+
+    steps:
+      - name: Download the package
+        uses: actions/download-artifact@v3
+        with:
+          name: endlesskey.appx
+
       - name: Checkout StoreBroker
         uses: actions/checkout@v3
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           repository: microsoft/StoreBroker
           path: StoreBroker
 
       - name: Create and push the Application Payload to Package Flight on Microsoft store
-        if: startsWith(github.ref, 'refs/tags/')
         shell: pwsh
         env:
           MS_TENANT_ID: ${{ secrets.MSPARTNER_TENANTID }}
