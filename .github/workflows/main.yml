@@ -206,6 +206,64 @@ jobs:
             endlesskey.appx
 
 
+  sign_binaries_for_EK_USB_image:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: windows-latest
+
+    steps:
+      - name: Download the kolibri-windows.zip
+        uses: actions/download-artifact@v3
+        with:
+          name: kolibri-windows.zip
+
+      - name: Sign the binaries
+        id: sing_binaries
+        shell: pwsh
+        env:
+          SIGNPATH_ORG_ID: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
+          SIGNPATH_USER_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+        run: |
+          Expand-Archive kolibri-windows.zip -DestinationPath kolibri-windows
+
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module -name SignPath
+          Submit-SigningRequest `
+            -CIUserToken $env:SIGNPATH_USER_TOKEN `
+            -OrganizationId $env:SIGNPATH_ORG_ID `
+            -ProjectSlug Endless_Apps `
+            -SigningPolicySlug Endless_Apps_Signing_for_Endless_USB_Key `
+            -ArtifactConfigurationSlug Binaries_for_Endless_USB_Key `
+            -InputArtifactPath kolibri-windows/kolibri-electron.exe `
+            -OutputArtifactPath kolibri-electron.signed.exe `
+            -WaitForCompletion
+
+          Submit-SigningRequest `
+            -CIUserToken $env:SIGNPATH_USER_TOKEN `
+            -OrganizationId $env:SIGNPATH_ORG_ID `
+            -ProjectSlug Endless_Apps `
+            -SigningPolicySlug Endless_Apps_Signing_for_Endless_USB_Key `
+            -ArtifactConfigurationSlug Binaries_for_Endless_USB_Key `
+            -InputArtifactPath kolibri-windows/resources/app/src/Kolibri/Kolibri.exe `
+            -OutputArtifactPath Kolibri.signed.exe `
+            -WaitForCompletion
+
+          mv kolibri-electron.signed.exe kolibri-windows/kolibri-electron.exe
+          mv Kolibri.signed.exe kolibri-windows/resources/app/src/Kolibri/Kolibri.exe
+
+          rm kolibri-windows.zip
+
+      - name: Compress
+        run: Compress-Archive -Path kolibri-windows\* -DestinationPath kolibri-windows.zip
+        shell: pwsh
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: steps.sing_binaries.outcome == 'success'
+        with:
+          files: kolibri-windows.zip
+
+
   push_to_MS_store:
     needs: build
     if: startsWith(github.ref, 'refs/tags/')
