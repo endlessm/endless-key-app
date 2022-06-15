@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  create:
   push:
   pull_request:
   workflow_dispatch:
