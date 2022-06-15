@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const { env } = require('process');
 const path = require('path');
 const child_process = require('child_process');
@@ -34,6 +34,8 @@ const LOCK_FILE = {
   path: null,
 };
 
+let DETECT_USB_CHANGES = true;
+
 function removePidFile() {
   const pidFile = path.join(KOLIBRI_HOME, 'server.pid');
   if (fs.existsSync(pidFile)) {
@@ -67,28 +69,42 @@ async function getEndlessKeyDataPath() {
   }
 }
 
-async function loadKolibriEnv() {
-  const keyData = await getEndlessKeyDataPath();
+function setupProvision() {
+  // Copy the provision file because Kolibri removes after applying
+  let provision_file = path.join(__dirname, 'provision.json');
+  if (!fs.existsSync(provision_file)) {
+    try {
+      fsExtra.copySync(AUTOPROVISION_FILE, provision_file);
+    } catch {
+      provision_file = AUTOPROVISION_FILE;
+    }
+  }
+  env.KOLIBRI_AUTOMATIC_PROVISION_FILE = provision_file;
+}
+
+async function loadKolibriEnv(useKey) {
+  console.log(`loading kolibri env, using USB: ${useKey}`);
   env.KOLIBRI_HOME = KOLIBRI_HOME;
   env.PYTHONPATH = KOLIBRI_EXTENSIONS;
   env.KOLIBRI_APPS_BUNDLE_PATH = path.join(__dirname, "apps-bundle", "apps");
 
+  if (!useKey) {
+    setupProvision();
+    return false;
+  }
+
+  const keyData = await getEndlessKeyDataPath();
   if (!keyData) {
-    // Copy the provision file because Kolibri removes after applying
-    let provision_file = path.join(__dirname, 'provision.json');
-    if (!fs.existsSync(provision_file)) {
-      try {
-        fsExtra.copySync(AUTOPROVISION_FILE, provision_file);
-      } catch {
-        provision_file = AUTOPROVISION_FILE;
-      }
-    }
-    env.KOLIBRI_AUTOMATIC_PROVISION_FILE = provision_file;
+    setupProvision();
     return false;
   }
 
   KOLIBRI_HOME_TEMPLATE = path.join(keyData, 'preseeded_kolibri_home');
   env.KOLIBRI_CONTENT_FALLBACK_DIRS = path.join(keyData, 'content');
+
+  if (!fs.existsSync(KOLIBRI_HOME) && fs.existsSync(KOLIBRI_HOME_TEMPLATE)) {
+    await fsExtra.copy(KOLIBRI_HOME_TEMPLATE, KOLIBRI_HOME);
+  }
 
   // Lock USB
   LOCK_FILE.path = path.join(keyData, 'lock');
@@ -135,45 +151,21 @@ async function getPluginVersion() {
   return NULL_PLUGIN_VERSION;
 }
 
-// Checks for the ~/.endless-key/version file and compares with the Endless key
-// kolibri-explore-plugin version. If the version is different, the
-// ~/endless-key folder will be removed.
-//
-// Return true if the version file does not match the plugin version or if the
-// .endless-key doesn't exists.
-async function checkVersion() {
-  console.log('Checking kolibri-app version file');
-  const versionFile = path.join(KOLIBRI_HOME, 'version');
-  const pluginVersion = await getPluginVersion();
-  let kolibriHomeVersion = NULL_PLUGIN_VERSION;
+const detectUSBChanges = () => {
+  console.log('Checking if the Endless Key USB is connected');
 
-  try {
-    kolibriHomeVersion = fs.readFileSync(versionFile, 'utf8').trim();
-  } catch (error) {
-    console.log('No version file found in .endless-key');
-  }
-
-  console.log(`${kolibriHomeVersion} < ${pluginVersion}`);
-  if (kolibriHomeVersion < pluginVersion) {
-    console.log('Newer version, replace the .endless-key directory and cleaning cache');
-    await fsExtra.remove(KOLIBRI_HOME);
-
-    if (fs.existsSync(KOLIBRI_HOME_TEMPLATE)) {
-      await fsExtra.copy(KOLIBRI_HOME_TEMPLATE, KOLIBRI_HOME);
+  getEndlessKeyDataPath().then((keyData) => {
+    // Notify the webview about the USB
+    // setHasUSB should be defined as a global function in the loaded HTML
+    mainWindow.webContents.executeJavaScript(`setHasUSB(${!!keyData})`, true);
+  }).catch((err) => {
+    console.error(err);
+  }).finally(() => {
+    if (DETECT_USB_CHANGES) {
+      setTimeout(() => { detectUSBChanges(); }, 1000);
     }
-    mainWindow.webContents.session.clearCache();
-    return true;
-  }
-
-  return false;
-}
-
-async function updateVersion() {
-  const versionFile = path.join(KOLIBRI_HOME, 'version');
-  const pluginVersion = await getPluginVersion();
-
-  await fsPromises.writeFile(versionFile, pluginVersion);
-}
+  });
+};
 
 const waitForKolibriUp = () => {
   console.log('Kolibri server not yet started, checking again in one second...');
@@ -185,7 +177,6 @@ const waitForKolibriUp = () => {
 
   http.get(`${KOLIBRI}/api/public/info`, (response) => {
     mainWindow.loadURL(`${KOLIBRI}/explore`);
-    updateVersion();
   }).on("error", (error) => {
     console.log("Error: " + error.message);
     setTimeout(() => { waitForKolibriUp(mainWindow); }, 1000);
@@ -201,6 +192,9 @@ async function createWindow() {
     show:false,
     icon: path.join(__dirname, 'icon.png'),
     title: 'Endless Key',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+    },
   });
   mainWindow.maximize();
   mainWindow.show();
@@ -221,22 +215,22 @@ async function createWindow() {
   };
   mainWindow.webContents.setWindowOpenHandler(windowOpenHandler);
 
-  const isDataAvailable = await loadKolibriEnv();
-  runKolibri();
-
   await mainWindow.loadFile(await getLoadingScreen());
-
-  if (!isDataAvailable) {
-    console.log('No Endless Key data found. Loading default Kolibri');
+  // Only show the welcome workflow if the KOLIBRI_HOME is not created
+  if (!fs.existsSync(KOLIBRI_HOME)) {
+    mainWindow.webContents.executeJavaScript('show_welcome()', true);
   } else {
-    const firstLaunch = await checkVersion();
-    if (firstLaunch) {
-      mainWindow.webContents.executeJavaScript('firstLaunch()', true);
-    }
+    // TODO: Check if the HOME was created with usb and in that case, require
+    // to the user to connect he USB
+    DETECT_USB_CHANGES = false;
+    loadKolibriEnv(true).then(() => {
+      runKolibri();
+    });
   }
 
   waitForKolibriUp(mainWindow);
-  return isDataAvailable;
+  // Check if there's an EK USB to notify to the interface
+  detectUSBChanges();
 };
 
 const reloadKolibri = () => {
@@ -288,6 +282,13 @@ const runKolibri = () => {
 
 app.on('ready', () => {
   createWindow();
+
+  ipcMain.on('load', (_event, data) => {
+    DETECT_USB_CHANGES = false;
+    loadKolibriEnv(data.usb).then(() => {
+      runKolibri();
+    });
+  });
 });
 
 app.on('window-all-closed', () => {
