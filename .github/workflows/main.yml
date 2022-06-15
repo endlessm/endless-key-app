@@ -13,9 +13,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-        with:
-          # Need to fetch everything so that 'git describe' can see the tags
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -157,8 +154,27 @@ jobs:
           name: "kolibri-windows.zip"
           path: "kolibri-windows.zip"
 
+
+  package:
+    needs: build
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          # Need to fetch everything so that 'git describe' can see the tags
+          fetch-depth: 0
+
+      - name: Download the kolibri-windows.zip
+        uses: actions/download-artifact@v3
+        with:
+          name: kolibri-windows.zip
+
       - name: Packaging
         run: |
+          Expand-Archive kolibri-windows.zip -DestinationPath kolibri-windows
+
           $describe = (git describe --always --tags --long --match 'v*')
           $ver_arr = $describe -split '[-v]'
           $ver_str = $ver_arr[1] + "." + $ver_arr[2]
@@ -196,14 +212,6 @@ jobs:
         with:
           name: "endlesskey.selfsigned.appx"
           path: "endlesskey.selfsigned.appx"
-
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: |
-            kolibri-windows.zip
-            endlesskey.appx
 
 
   sign_binaries_for_EK_USB_image:
@@ -265,7 +273,7 @@ jobs:
 
 
   push_to_MS_store:
-    needs: build
+    needs: package
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: windows-latest
 
