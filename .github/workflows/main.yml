@@ -56,7 +56,7 @@ jobs:
 
       - name: Add kolibri_zim_plugin to Kolibri's dist packages
         run: |
-          pip install kolibri-zim-plugin --target="src\kolibri\dist"
+          pip install kolibri-zim-plugin[full] --target="src\kolibri\dist"
 
       - name: Add kolibri_explore_plugin to Kolibri's dist packages
         run: |
