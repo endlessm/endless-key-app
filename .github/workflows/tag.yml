@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  weekly_tag:
+  tag:
     runs-on: windows-latest
 
     steps:
@@ -40,3 +40,7 @@ jobs:
           version: ${{ steps.have_new_tag_string.outputs.tag_string }}
           message: "Release ${{ steps.have_new_tag_string.outputs.tag_string }}"
           token: ${{ secrets.GITHUB_TOKEN }}
+
+  build_for_tag:
+    needs: tag
+    uses: .github/workflows/main.yml
