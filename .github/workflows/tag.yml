@@ -8,6 +8,8 @@ on:
 jobs:
   tag:
     runs-on: windows-latest
+    outputs:
+      tag_string: ${{ steps.have_new_tag_string.outputs.tag_string }}
 
     steps:
       - name: Checkout
@@ -43,4 +45,5 @@ jobs:
 
   build_for_tag:
     needs: tag
-    uses: .github/workflows/main.yml
+    if: needs.tag.outputs.tag_string
+    uses: ./.github/workflows/main.yml
