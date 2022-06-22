@@ -255,6 +255,8 @@ jobs:
             -OutputArtifactPath Kolibri.signed.exe `
             -WaitForCompletion
 
+          rm kolibri-windows/kolibri-electron.exe
+          rm kolibri-windows/resources/app/src/Kolibri/Kolibri.exe
           mv kolibri-electron.signed.exe kolibri-windows/kolibri-electron.exe
           mv Kolibri.signed.exe kolibri-windows/resources/app/src/Kolibri/Kolibri.exe
 
