@@ -76,8 +76,17 @@ jobs:
           C:\msys64\usr\bin\patch.exe src\kolibri\utils\server.py patches\kolibri-utils-server.diff
 
       - name: Build
+        env:
+          PYTHONOPTIMIZE: 2
         run: |
+          # Precompile the py as pyc files
+          python.exe -m compileall src\kolibri\ -b
+          # Remove py source files
+          Get-Childitem -Path src\kolibri\ -Include *.py -File -Recurse | Remove-Item -Force
+          # Build as a Windows executable binary
           pyinstaller.exe --noconfirm main.spec
+          # Remove the __pycache__
+          Get-Childitem -Path src\kolibri\ -Include __pycache__ -Directory -Recurse | Remove-Item -Recurse -Force
 
       - name: Install electron-forge
         working-directory: kolibri-electron
