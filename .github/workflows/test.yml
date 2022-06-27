@@ -15,9 +15,9 @@ jobs:
           MS_CLIENT_PWD: ${{ secrets.MSPARTNER_CLIENTPWD }}
           SIGNPATH_USER_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
         run: |
-          echo $Env:MS_CLIENT_PWD
-          echo $Env:SIGNPATH_USER_TOKEN
-          $x = $Env:MS_CLIENT_PWD
+          echo $env:MS_CLIENT_PWD
+          echo $env:SIGNPATH_USER_TOKEN
+          $x = $env:MS_CLIENT_PWD
           echo $x.length
-          $x = $Env:SIGNPATH_USER_TOKEN
+          $x = $env:SIGNPATH_USER_TOKEN
           echo $x.length
