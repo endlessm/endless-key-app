@@ -18,6 +18,6 @@ jobs:
           echo $env:MS_CLIENT_PWD
           echo $env:SIGNPATH_USER_TOKEN
           $x = $env:MS_CLIENT_PWD
-          echo $x.length
+          echo $x.substring(1, 4)
           $x = $env:SIGNPATH_USER_TOKEN
-          echo $x.length
+          echo $x.substring(1, 4)
