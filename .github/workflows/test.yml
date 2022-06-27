@@ -21,3 +21,34 @@ jobs:
           echo $x.substring(1, 4)
           $x = $env:SIGNPATH_USER_TOKEN
           echo $x.substring(1, 4)
+
+      - name: Sign the binaries
+        id: sign_binaries
+        shell: pwsh
+        env:
+          SIGNPATH_ORG_ID: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
+          SIGNPATH_USER_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
+        run: |
+          echo Expand-Archive kolibri-windows.zip -DestinationPath kolibri-windows
+
+          echo Set-PSRepository PSGallery -InstallationPolicy Trusted
+          echo Install-Module -name SignPath
+          echo Submit-SigningRequest `
+            -CIUserToken $env:SIGNPATH_USER_TOKEN `
+            -OrganizationId $env:SIGNPATH_ORG_ID `
+            -ProjectSlug Endless_Apps `
+            -SigningPolicySlug Endless_Apps_Signing_for_Endless_USB_Key `
+            -ArtifactConfigurationSlug Binaries_for_Endless_USB_Key `
+            -InputArtifactPath kolibri-windows/kolibri-electron.exe `
+            -OutputArtifactPath kolibri-electron.signed.exe `
+            -WaitForCompletion
+
+          echo Submit-SigningRequest `
+            -CIUserToken $env:SIGNPATH_USER_TOKEN `
+            -OrganizationId $env:SIGNPATH_ORG_ID `
+            -ProjectSlug Endless_Apps `
+            -SigningPolicySlug Endless_Apps_Signing_for_Endless_USB_Key `
+            -ArtifactConfigurationSlug Binaries_for_Endless_USB_Key `
+            -InputArtifactPath kolibri-windows/resources/app/src/Kolibri/Kolibri.exe `
+            -OutputArtifactPath Kolibri.signed.exe `
+            -WaitForCompletion
