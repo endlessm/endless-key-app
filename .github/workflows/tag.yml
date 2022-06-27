@@ -47,3 +47,5 @@ jobs:
     needs: tag
     if: needs.tag.outputs.tag_string
     uses: ./.github/workflows/main.yml
+    with:
+      is_at_tag: ${{ needs.tag.outputs.tag_string }} != ""
