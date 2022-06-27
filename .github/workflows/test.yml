@@ -1,0 +1,17 @@
+name: Testy McTestFace
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - name: Test
+        shell: pwsh
+        env:
+          MS_TENANT_ID: ${{ secrets.MSPARTNER_TENANTID }}
+          MS_CLIENT_ID: ${{ secrets.MSPARTNER_CLIENTID }}
+          MS_CLIENT_PWD: ${{ secrets.MSPARTNER_CLIENTPWD }}
+        run: |
+          dir env:
