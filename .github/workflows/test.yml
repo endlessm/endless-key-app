@@ -1,7 +1,7 @@
 name: Testy McTestFace
 
 on:
-  workflow_dispatch:
+  push:
 
 jobs:
   test:
