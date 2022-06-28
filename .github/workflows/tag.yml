@@ -48,5 +48,5 @@ jobs:
     if: needs.tag.outputs.tag_string
     uses: ./.github/workflows/main.yml
     with:
-      is_at_tag: true
+      tag_name: ${{ needs.tag.outputs.tag_string }}
     secrets: inherit
