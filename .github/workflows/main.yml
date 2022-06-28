@@ -241,7 +241,7 @@ jobs:
           name: kolibri-windows.zip
 
       - name: Sign the binaries
-        id: sing_binaries
+        id: sign_binaries
         shell: pwsh
         env:
           SIGNPATH_ORG_ID: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
@@ -284,7 +284,7 @@ jobs:
 
       - name: Release
         uses: softprops/action-gh-release@v1
-        if: steps.sing_binaries.outcome == 'success'
+        if: steps.sign_binaries.outcome == 'success'
         with:
           files: kolibri-windows.zip
 
