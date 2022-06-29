@@ -103,8 +103,9 @@ class Application:
     def start_server(self):
         os.environ["KOLIBRI_HTTP_PORT"] = str(self.port)
 
-        logging.info("Preparing to start Kolibri server...")
+        logging.info(f"{datetime.datetime.now()} Preparing to start Kolibri server...")
         initialize_plugins()
+        logging.info(f"{datetime.datetime.now()} Initialized plugins...")
         start_kolibri_server()
 
 

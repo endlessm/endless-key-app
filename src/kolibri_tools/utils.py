@@ -69,6 +69,7 @@ def start_kolibri_server():
     automatic_provisiondevice()
 
     start.callback(KOLIBRI_PORT, zip_port=KOLIBRI_ZIP_PORT, background=False)
+    logging.info(f"{datetime.datetime.now()} Started Kolibri server...")
 
 
 def get_initialize_url(next_url=None):
