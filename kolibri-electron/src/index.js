@@ -34,6 +34,8 @@ const LOCK_FILE = {
   path: null,
 };
 
+const USB_CONTENT_FLAG_FILE = path.join(KOLIBRI_HOME, 'usb_content_flag');
+
 let DETECT_USB_CHANGES = true;
 
 function removePidFile() {
@@ -104,6 +106,9 @@ async function loadKolibriEnv(useKey) {
 
   if (!fs.existsSync(KOLIBRI_HOME) && fs.existsSync(KOLIBRI_HOME_TEMPLATE)) {
     await fsExtra.copy(KOLIBRI_HOME_TEMPLATE, KOLIBRI_HOME);
+    // Just create the flag file in the KOLIBRI_HOME
+    handler = await fsPromises.open(USB_CONTENT_FLAG_FILE, 'w');
+    handler.close();
   }
 
   // Lock USB
@@ -149,6 +154,15 @@ async function getPluginVersion() {
   }
 
   return NULL_PLUGIN_VERSION;
+}
+
+async function requireUSBConnected() {
+  if (!fs.existsSync(USB_CONTENT_FLAG_FILE)) {
+    return false;
+  }
+
+  const keyData = await getEndlessKeyDataPath();
+  return !keyData;
 }
 
 const detectUSBChanges = () => {
@@ -219,11 +233,11 @@ async function createWindow() {
   // Only show the welcome workflow if the KOLIBRI_HOME is not created
   if (!fs.existsSync(KOLIBRI_HOME)) {
     mainWindow.webContents.executeJavaScript('show_welcome()', true);
+  } else if (await requireUSBConnected()) {
+    mainWindow.webContents.executeJavaScript('show_endless_key()', true);
   } else {
-    // TODO: Check if the HOME was created with usb and in that case, require
-    // to the user to connect he USB
     DETECT_USB_CHANGES = false;
-    loadKolibriEnv(true).then(() => {
+    loadKolibriEnv(fs.existsSync(USB_CONTENT_FLAG_FILE)).then(() => {
       runKolibri();
     });
   }
