@@ -15,6 +15,9 @@ on:
 jobs:
   build:
     runs-on: windows-2019
+    strategy:
+      matrix:
+        architecture: [x86, x64]
 
     steps:
       - name: Checkout
@@ -24,7 +27,7 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
-          architecture: 'x86'
+          architecture: ${{ matrix.architecture }}
 
       - name: Set up Node
         uses: actions/setup-node@v2
@@ -46,7 +49,12 @@ jobs:
 
       - name: Build pyinstaller bootloader
         run: |
-          python waf all --target-arch=32bit
+          if ("${{ matrix.architecture }}" -eq "x86") {
+            python waf all --target-arch=32bit
+          }
+          else {
+            python waf all
+          }
         working-directory: pyinstaller/bootloader
 
       - name: Install pyinstaller
@@ -105,7 +113,13 @@ jobs:
 
       - name: Build electron app
         working-directory: kolibri-electron
-        run: yarn make --arch=ia32
+        run: |
+          if ("${{ matrix.architecture }}" -eq "x86") {
+            yarn make --arch=ia32
+          }
+          else {
+            yarn make
+          }
 
       - name: Kolibri cleanup
         run: |
@@ -153,26 +167,30 @@ jobs:
 
       - name: Create kolibri-windows
         run: |
-          mv kolibri-electron/out/kolibri-electron-win32-ia32 kolibri-windows
+          $ElectronDiretory = (Get-Childitem -Path kolibri-electron\out\ -Directory kolibri-electron-win32*)[0]
+          mv $ElectronDiretory kolibri-windows
 
           mv src/kolibri dist/Kolibri/kolibri
           mv dist/Kolibri kolibri-windows/resources/app/src/
           mv src/apps-bundle kolibri-windows/resources/app/src/
 
       - name: Compress
-        run: Compress-Archive -Path kolibri-windows\* -DestinationPath kolibri-windows.zip
+        run: Compress-Archive -Path kolibri-windows\* -DestinationPath kolibri-windows_${{ matrix.architecture }}.zip
         shell: pwsh
 
       - name: Upload ZIP
         uses: actions/upload-artifact@v2
         with:
-          name: "kolibri-windows.zip"
-          path: "kolibri-windows.zip"
+          name: "kolibri-windows_${{ matrix.architecture }}.zip"
+          path: "kolibri-windows_${{ matrix.architecture }}.zip"
 
 
   package:
     needs: build
     runs-on: windows-latest
+    strategy:
+      matrix:
+        architecture: [x86, x64]
 
     steps:
       - name: Checkout
@@ -184,11 +202,11 @@ jobs:
       - name: Download the kolibri-windows.zip
         uses: actions/download-artifact@v3
         with:
-          name: kolibri-windows.zip
+          name: kolibri-windows_${{ matrix.architecture }}.zip
 
       - name: Packaging
         run: |
-          Expand-Archive kolibri-windows.zip -DestinationPath kolibri-windows
+          Expand-Archive kolibri-windows_${{ matrix.architecture }}.zip -DestinationPath kolibri-windows
 
           $describe = (git describe --always --tags --long --match 'v*')
           $ver_arr = $describe -split '[-v]'
@@ -199,16 +217,18 @@ jobs:
           $dst = "kolibri-windows/appxmanifest.xml"
           [xml]$xmlDoc = Get-Content $src
           $xmlDoc.Package.Identity.Version = $ver_str
+          $xmlDoc.Package.Identity.ProcessorArchitecture = "${{ matrix.architecture }}"
           $xmlDoc.Save($dst)
+          Get-Content $dst
 
           Copy-Item -Path "build_winapp/assets" -Destination "kolibri-windows/" -recurse
-          & "${Env:ProgramFiles(x86)}\Windows Kits\10\App Certification Kit\makeappx.exe" pack /d kolibri-windows /p endlesskey.appx
+          & "${Env:ProgramFiles(x86)}\Windows Kits\10\App Certification Kit\makeappx.exe" pack /d kolibri-windows /p endlesskey_${{ matrix.architecture }}.appx
 
       - name: Upload unsigned package
         uses: actions/upload-artifact@v2
         with:
-          name: "endlesskey.appx"
-          path: "endlesskey.appx"
+          name: "endlesskey_${{ matrix.architecture }}.appx"
+          path: "endlesskey_${{ matrix.architecture }}.appx"
 
       - name: Sign artifact for testing
         id: sign_for_testing
@@ -218,27 +238,30 @@ jobs:
           SIGN_PHRASE: ${{ secrets.SELFSIGN_PHRASE }}
         run: |
           & "${Env:ProgramFiles(x86)}\Windows Kits\10\App Certification Kit\signtool.exe" `
-            sign /fd SHA256 /a /f build_winapp/selfsign.pfx /p $env:SIGN_PHRASE endlesskey.appx
-          mv endlesskey.appx endlesskey.selfsigned.appx
+            sign /fd SHA256 /a /f build_winapp/selfsign.pfx /p $env:SIGN_PHRASE endlesskey_${{ matrix.architecture }}.appx
+          mv endlesskey_${{ matrix.architecture }}.appx endlesskey_${{ matrix.architecture }}.selfsigned.appx
 
       - name: Upload self-signed package for testing
         if: steps.sign_for_testing.outcome == 'success'
         uses: actions/upload-artifact@v2
         with:
-          name: "endlesskey.selfsigned.appx"
-          path: "endlesskey.selfsigned.appx"
+          name: "endlesskey_${{ matrix.architecture }}.selfsigned.appx"
+          path: "endlesskey_${{ matrix.architecture }}.selfsigned.appx"
 
 
   sign_binaries_for_EK_USB_image:
     needs: build
     if: startsWith(github.ref, 'refs/tags/') || startsWith(inputs.tag_name, 'v')
     runs-on: windows-latest
+    strategy:
+      matrix:
+        architecture: [x86, x64]
 
     steps:
       - name: Download the kolibri-windows.zip
         uses: actions/download-artifact@v3
         with:
-          name: kolibri-windows.zip
+          name: kolibri-windows_${{ matrix.architecture }}.zip
 
       - name: Sign the binaries
         id: sign_binaries
@@ -247,7 +270,7 @@ jobs:
           SIGNPATH_ORG_ID: ${{ secrets.SIGNPATH_ORGANIZATION_ID }}
           SIGNPATH_USER_TOKEN: ${{ secrets.SIGNPATH_API_TOKEN }}
         run: |
-          Expand-Archive kolibri-windows.zip -DestinationPath kolibri-windows
+          Expand-Archive kolibri-windows_${{ matrix.architecture }}.zip -DestinationPath kolibri-windows
 
           Set-PSRepository PSGallery -InstallationPolicy Trusted
           Install-Module -name SignPath
@@ -276,30 +299,34 @@ jobs:
           mv kolibri-electron.signed.exe kolibri-windows/kolibri-electron.exe
           mv Kolibri.signed.exe kolibri-windows/resources/app/src/Kolibri/Kolibri.exe
 
-          rm kolibri-windows.zip
+          rm kolibri-windows_${{ matrix.architecture }}.zip
 
       - name: Compress
-        run: Compress-Archive -Path kolibri-windows\* -DestinationPath kolibri-windows.zip
+        run: Compress-Archive -Path kolibri-windows\* -DestinationPath kolibri-windows_${{ matrix.architecture }}.zip
         shell: pwsh
 
       - name: Release
         uses: softprops/action-gh-release@v1
         if: steps.sign_binaries.outcome == 'success'
         with:
-          files: kolibri-windows.zip
+          files: kolibri-windows_${{ matrix.architecture }}.zip
           tag_name: ${{ inputs.tag_name }}
-
 
   push_to_MS_store:
     needs: package
     if: startsWith(github.ref, 'refs/tags/') || startsWith(inputs.tag_name, 'v')
-    runs-on: windows-latest
+    runs-on: windows-2019
 
     steps:
       - name: Download the package
         uses: actions/download-artifact@v3
-        with:
-          name: endlesskey.appx
+
+      - name: Gather the package files
+        run: |
+          mkdir packages
+
+          $packages = Get-Childitem -Path .\ -Include *.appx -Exclude *selfsigned* -File -Recurse
+          mv $packages packages/
 
       - name: Checkout StoreBroker
         uses: actions/checkout@v3
@@ -347,7 +374,7 @@ jobs:
             -ConfigPath "MSAppPayload/SBConfig.json" `
             -PDPRootPath "MSAppPayload/PDPs" `
             -ImagesRootPath "MSAppPayload/PDPs" `
-            -AppxPath endlesskey.appx `
+            -AppxPath packages/*.appx `
             -MediaFallbackLanguage en-US `
             -OutPath $SubmissionRoot `
             -OutName endlesskey `
