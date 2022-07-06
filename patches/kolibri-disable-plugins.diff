@@ -1,0 +1,42 @@
+diff --git a/kolibri/__init__.py b/kolibri/__init__.py
+index 8a7f948a8f..ee10519b76 100755
+--- a/kolibri/__init__.py
++++ b/kolibri/__init__.py
+@@ -27,7 +27,7 @@ __version__ = str(get_version(VERSION))
+ #: import in setup.py for creating a list of plugin entry points.
+ INTERNAL_PLUGINS = [
+     "kolibri.plugins.app",
+-    "kolibri.plugins.coach",
++    #"kolibri.plugins.coach",
+     "kolibri.plugins.default_theme",
+     "kolibri.plugins.demo_server",
+     "kolibri.plugins.device",
+@@ -37,7 +37,7 @@ INTERNAL_PLUGINS = [
+     "kolibri.plugins.learn",
+     "kolibri.plugins.media_player",
+     "kolibri.plugins.pdf_viewer",
+-    "kolibri.plugins.setup_wizard",
++    #"kolibri.plugins.setup_wizard",
+     "kolibri.plugins.slideshow_viewer",
+     "kolibri.plugins.user_auth",
+     "kolibri.plugins.user_profile",
+diff --git a/kolibri/utils/build_config/default_plugins.py b/kolibri/utils/build_config/default_plugins.py
+index c2892a53e5..9c5df7cc28 100644
+--- a/kolibri/utils/build_config/default_plugins.py
++++ b/kolibri/utils/build_config/default_plugins.py
+@@ -1,5 +1,5 @@
+ DEFAULT_PLUGINS = [
+-    "kolibri.plugins.coach",
++    #"kolibri.plugins.coach",
+     "kolibri.plugins.default_theme",
+     "kolibri.plugins.device",
+     "kolibri.plugins.epub_viewer",
+@@ -9,7 +9,7 @@ DEFAULT_PLUGINS = [
+     "kolibri.plugins.media_player",
+     "kolibri.plugins.pdf_viewer",
+     "kolibri.plugins.perseus_viewer",
+-    "kolibri.plugins.setup_wizard",
++    #"kolibri.plugins.setup_wizard",
+     "kolibri.plugins.slideshow_viewer",
+     "kolibri.plugins.user_auth",
+     "kolibri.plugins.user_profile",

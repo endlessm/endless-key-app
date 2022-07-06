@@ -86,9 +86,15 @@ jobs:
         run: |
           7z x apps-bundle.zip -osrc/apps-bundle
 
-      - name : Patch Kolibri's server code to avoid Windows firewall prompts
+      - name: Patch Kolibri's server code to avoid Windows firewall prompts
         run: |
           C:\msys64\usr\bin\patch.exe src\kolibri\utils\server.py patches\kolibri-utils-server.diff
+
+      - name: Drop coach and setup-wizrd plugins of Kolibri
+        run: |
+          C:\msys64\usr\bin\patch.exe -d src\kolibri\ patches\kolibri-disable-plugins.diff
+          Get-Childitem -Path src\kolibri\plugins\ -Include coach -Directory -Recurse | Remove-Item -Recurse -Force
+          Get-Childitem -Path src\kolibri\plugins\ -Include setup_wizard -Directory -Recurse | Remove-Item -Recurse -Force
 
       - name: Build
         env:
