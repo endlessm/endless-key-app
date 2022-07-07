@@ -17,7 +17,7 @@ jobs:
     runs-on: windows-2019
     strategy:
       matrix:
-        architecture: [x86, x64]
+        architecture: [x64]
 
     steps:
       - name: Checkout
@@ -190,7 +190,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        architecture: [x86, x64]
+        architecture: [x64]
 
     steps:
       - name: Checkout
@@ -255,7 +255,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        architecture: [x86, x64]
+        architecture: [x64]
 
     steps:
       - name: Download the kolibri-windows.zip
