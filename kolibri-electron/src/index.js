@@ -27,6 +27,7 @@ let django = null;
 let KOLIBRI_HOME_TEMPLATE = '';
 let KOLIBRI_EXTENSIONS = path.join(__dirname, 'Kolibri', 'kolibri', 'dist');
 let KOLIBRI_HOME = path.join(userData, 'endless-key');
+const METRICS_ID = 'endless-key-windows';
 const AUTOPROVISION_FILE = path.join(__dirname, 'automatic_provision.json');
 
 const LOCK_FILE = {
@@ -89,6 +90,7 @@ async function loadKolibriEnv(useKey) {
   env.KOLIBRI_HOME = KOLIBRI_HOME;
   env.PYTHONPATH = KOLIBRI_EXTENSIONS;
   env.KOLIBRI_APPS_BUNDLE_PATH = path.join(__dirname, "apps-bundle", "apps");
+  env.KOLIBRI_PROJECT = METRICS_ID
 
   if (!useKey) {
     setupProvision();
