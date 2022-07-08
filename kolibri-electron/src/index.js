@@ -90,16 +90,17 @@ async function loadKolibriEnv(useKey) {
   env.KOLIBRI_HOME = KOLIBRI_HOME;
   env.PYTHONPATH = KOLIBRI_EXTENSIONS;
   env.KOLIBRI_APPS_BUNDLE_PATH = path.join(__dirname, "apps-bundle", "apps");
+  env.KOLIBRI_CONTENT_COLLECTIONS_PATH = path.join(__dirname, "collections");
 
   const APPXMSIX_PATTERN = 'Program Files\\WindowsApps'
   if (__dirname.includes(APPXMSIX_PATTERN)) {
     console.log('loading kolibri env, using as Windows APPX/MSIX application');
-    env.KOLIBRI_PROJECT = METRICS_ID
+    env.KOLIBRI_PROJECT = METRICS_ID;
   }
 
   if (!env.KOLIBRI_PROJECT) {
     console.log('loading kolibri env, using as Windows standalone application');
-    env.KOLIBRI_PROJECT = `${METRICS_ID}-standalone`
+    env.KOLIBRI_PROJECT = `${METRICS_ID}-standalone`;
   }
 
   if (!useKey) {
