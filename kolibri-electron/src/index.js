@@ -92,7 +92,7 @@ async function loadKolibriEnv(useKey) {
   env.KOLIBRI_APPS_BUNDLE_PATH = path.join(__dirname, "apps-bundle", "apps");
   env.KOLIBRI_CONTENT_COLLECTIONS_PATH = path.join(__dirname, "collections");
 
-  const APPXMSIX_PATTERN = 'Program Files\\WindowsApps'
+  const APPXMSIX_PATTERN = path.join(env.PROGRAMFILES, "WindowsApps");
   if (__dirname.includes(APPXMSIX_PATTERN)) {
     console.log('loading kolibri env, using as Windows APPX/MSIX application');
     env.KOLIBRI_PROJECT = METRICS_ID;
