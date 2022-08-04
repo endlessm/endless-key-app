@@ -381,6 +381,13 @@ jobs:
             echo NULL > $dummy_screenshot
           }
 
+          echo "Going to create dummy additional assets for Application Payload creation:"
+          $xmlDoc.ProductDescription.AdditionalAssets.ChildNodes | ForEach-Object {
+            $dummy_asset = "MSAppPayload/PDPs/en-us/" + $_.FileName
+            echo $dummy_asset
+            echo NULL > $dummy_asset
+          }
+
           New-SubmissionPackage `
             -ConfigPath "MSAppPayload/SBConfig.json" `
             -PDPRootPath "MSAppPayload/PDPs" `
