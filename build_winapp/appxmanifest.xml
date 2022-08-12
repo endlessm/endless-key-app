@@ -6,7 +6,7 @@
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10">
   <Identity
     Name="EndlessOSFoundation.EndlessKey"
-    Version="1.0.0.0"
+    Version="1.0.20.0"
     Publisher="CN=4B001A25-B854-44D9-BAD3-8AD7FC7A8761"
     ProcessorArchitecture="x64" />
   <Properties>
