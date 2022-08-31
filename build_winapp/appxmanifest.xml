@@ -29,7 +29,7 @@
   </Capabilities>
   <Applications>
     <Application
-      Id="endlesskeyapp"
+      Id="EndlessOSFoundation.EndlessKey"
       Executable="kolibri-electron.exe"
       EntryPoint="Windows.FullTrustApplication">
       <uap3:VisualElements
