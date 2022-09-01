@@ -13,7 +13,7 @@
     <DisplayName>Endless Key</DisplayName>
     <PublisherDisplayName>Endless OS Foundation</PublisherDisplayName>
     <Description>Endless Key</Description>
-    <Logo>resources/app/src/logo.png</Logo>
+    <Logo>assets/icon.png</Logo>
   </Properties>
   <Resources>
     <Resource Language="en-us" />
