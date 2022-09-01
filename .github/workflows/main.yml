@@ -221,7 +221,8 @@ jobs:
 
           $describe = (git describe --always --tags --long --match 'v*')
           $ver_arr = $describe -split '[-v]'
-          $ver_str = $ver_arr[1] + "." + $ver_arr[2]
+          # Always ".0" to make it windows store compatible
+          $ver_str = $ver_arr[1] + ".0"
 
           echo "Set package's version as $ver_str"
           $src = "build_winapp/appxmanifest.xml"
