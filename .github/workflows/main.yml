@@ -215,20 +215,43 @@ jobs:
         with:
           name: kolibri-windows_${{ matrix.architecture }}.zip
 
-      - name: Packaging
+      - name: Calculate version from repository
+        if: (startsWith(github.ref, 'refs/tags/') == false) && (startsWith(inputs.tag_name, 'v') == false)
         run: |
-          Expand-Archive kolibri-windows_${{ matrix.architecture }}.zip -DestinationPath kolibri-windows
-
           $describe = (git describe --always --tags --long --match 'v*')
           $ver_arr = $describe -split '[-v]'
           # Always ".0" to make it windows store compatible
           $ver_str = $ver_arr[1] + ".0"
+          echo "BUILD_VERSION=$ver_str" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+        shell: pwsh
 
-          echo "Set package's version as $ver_str"
+      - name: Using version from inputs
+        if: startsWith(inputs.tag_name, 'v')
+        run: |
+          $ver_arr = $inputs.tag_name -split '[-v]'
+          # Always ".0" to make it windows store compatible
+          $ver_str = $ver_arr[1] + ".0"
+          echo "BUILD_VERSION=$ver_str" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+        shell: pwsh
+
+      - name: Using version from ref
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          $ver_arr = ${Env:GITHUB_REF_NAME} -split '[-v]'
+          # Always ".0" to make it windows store compatible
+          $ver_str = $ver_arr[1] + ".0"
+          echo "BUILD_VERSION=$ver_str" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+        shell: pwsh
+
+      - name: Packaging
+        run: |
+          Expand-Archive kolibri-windows_${{ matrix.architecture }}.zip -DestinationPath kolibri-windows
+
+          echo "Set package's version as ${Env:BUILD_VERSION}"
           $src = "build_winapp/appxmanifest.xml"
           $dst = "kolibri-windows/appxmanifest.xml"
           [xml]$xmlDoc = Get-Content $src
-          $xmlDoc.Package.Identity.Version = $ver_str
+          $xmlDoc.Package.Identity.Version = ${Env:BUILD_VERSION}
           $xmlDoc.Package.Identity.ProcessorArchitecture = "${{ matrix.architecture }}"
           $xmlDoc.Save($dst)
           Get-Content $dst
