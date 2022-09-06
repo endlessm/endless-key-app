@@ -250,14 +250,26 @@ jobs:
           echo "Set package's version as ${Env:BUILD_VERSION}"
           $src = "build_winapp/appxmanifest.xml"
           $dst = "kolibri-windows/appxmanifest.xml"
-          [xml]$xmlDoc = Get-Content $src
+
+          $xmlDoc = New-Object xml
+          $xmlDoc.PreserveWhitespace = $true
+          $xmlDoc.Load($src)
+
           $xmlDoc.Package.Identity.Version = ${Env:BUILD_VERSION}
           $xmlDoc.Package.Identity.ProcessorArchitecture = "${{ matrix.architecture }}"
-          $xmlDoc.Save($dst)
+
+          $settings = New-Object System.Xml.XmlWriterSettings
+          $settings.Indent = $true
+          $settings.NewLineOnAttributes = $true
+          $writer = [System.Xml.XmlWriter]::Create($dst, $settings)
+
+          $xmlDoc.Save($writer)
+          $writer.Dispose()
           Get-Content $dst
 
           Copy-Item -Path "build_winapp/assets" -Destination "kolibri-windows/" -recurse
           & "${Env:ProgramFiles(x86)}\Windows Kits\10\App Certification Kit\makeappx.exe" pack /d kolibri-windows /p endlesskey_${{ matrix.architecture }}.appx
+        shell: pwsh
 
       - name: Upload unsigned package
         uses: actions/upload-artifact@v2
