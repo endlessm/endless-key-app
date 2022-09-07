@@ -251,20 +251,10 @@ jobs:
           $src = "build_winapp/appxmanifest.xml"
           $dst = "kolibri-windows/appxmanifest.xml"
 
-          $xmlDoc = New-Object xml
-          $xmlDoc.PreserveWhitespace = $true
-          $xmlDoc.Load($src)
+          # Set version and architecture in the manifest file
+          $manifest = Get-Content $src
+          $manifest -replace '1.0.0.0',$Env:BUILD_VERSION -replace 'x64','${{ matrix.architecture }}' > $dst
 
-          $xmlDoc.Package.Identity.Version = ${Env:BUILD_VERSION}
-          $xmlDoc.Package.Identity.ProcessorArchitecture = "${{ matrix.architecture }}"
-
-          $settings = New-Object System.Xml.XmlWriterSettings
-          $settings.Indent = $true
-          $settings.NewLineOnAttributes = $true
-          $writer = [System.Xml.XmlWriter]::Create($dst, $settings)
-
-          $xmlDoc.Save($writer)
-          $writer.Dispose()
           Get-Content $dst
 
           Copy-Item -Path "build_winapp/assets" -Destination "kolibri-windows/" -recurse
