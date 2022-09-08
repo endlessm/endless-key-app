@@ -37,3 +37,11 @@ Windows version of Endless Key app.
     cp -r dist\kolibri\Kolibri kolibri-windows\resources\app\src\
     cp -r apps-bundle kolibri-windows\resources\app\src\
 ```
+
+## Release:
+
+The release process is completely automated using github-ci. A tag in the
+repository is a new release.
+
+A new tag will trigger the build action that will upload the app package to the
+Microsoft store to the Test Flight.
