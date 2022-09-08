@@ -67,6 +67,11 @@ jobs:
       - name: Prep kolibri dist
         run: |
           pip install kolibri --target="src"
+          $Env:PYTHONPATH="src"
+          $version = pip show kolibri
+          $version = $version | Select-String -Pattern "Version: (\d+.\d+.\d+)" | Select-Object *
+          $ver_str = $version.Matches.Groups[1].value
+          echo "KOLIBRI_VERSION=$ver_str" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Add kolibri_zim_plugin to Kolibri's dist packages
         run: |
@@ -75,6 +80,56 @@ jobs:
       - name: Add kolibri_explore_plugin to Kolibri's dist packages
         run: |
           pip install kolibri-explore-plugin --target="src\kolibri\dist"
+
+      - name: Calculate version from repository
+        if: (startsWith(github.ref, 'refs/tags/') == false) && (startsWith(inputs.tag_name, 'v') == false)
+        run: |
+          $describe = (git describe --always --tags --long --match 'v*')
+          $ver_arr = $describe -split '[-v]'
+          # Always ".0" to make it windows store compatible
+          $ver_str = $ver_arr[1] + ".0"
+          echo "BUILD_VERSION=$ver_str" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+        shell: pwsh
+
+      - name: Using version from inputs
+        if: startsWith(inputs.tag_name, 'v')
+        run: |
+          $ver_arr = $inputs.tag_name -split '[-v]'
+          # Always ".0" to make it windows store compatible
+          $ver_str = $ver_arr[1] + ".0"
+          echo "BUILD_VERSION=$ver_str" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+        shell: pwsh
+
+      - name: Using version from ref
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          $ver_arr = ${Env:GITHUB_REF_NAME} -split '[-v]'
+          # Always ".0" to make it windows store compatible
+          $ver_str = $ver_arr[1] + ".0"
+          echo "BUILD_VERSION=$ver_str" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+        shell: pwsh
+
+      - name: Update build-info.json in kolibri-explore-plugin
+        working-directory: src/kolibri/dist/kolibri_explore_plugin
+        shell: pwsh
+        run: |
+          $json = Get-Content static/build-info.json | ConvertFrom-Json
+          if (!$json.platform) {
+            $json | add-member -Name "platform" -value "" -MemberType NoteProperty
+          }
+          if (!$json.platform_version) {
+            $json | add-member -Name "platform_version" -value "" -MemberType NoteProperty
+          }
+          if (!$json.kolibri) {
+            $json | add-member -Name "kolibri" -value "" -MemberType NoteProperty
+          }
+
+          $json.platform = "Windows"
+          $json.platform_version = $Env:BUILD_VERSION
+          $json.kolibri = $Env:KOLIBRI_VERSION
+
+          $json | ConvertTo-Json > static/build-info.json
+          Get-Content static/build-info.json
 
       - uses: robinraju/release-downloader@v1.3
         with:
