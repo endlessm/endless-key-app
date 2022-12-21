@@ -27,7 +27,7 @@ launch the Kolibri server with a minimal configuration.
 ```
     pip install kolibri --target="dist\Kolibri\"
     pip install kolibri-zim-plugin --target="dist\kolibri\kolibri\dist"
-    pip install "kolibri-explore-plugin>=2,<3" --target="dist\kolibri\kolibri\dist"
+    pip install kolibri-explore-plugin --target="dist\kolibri\kolibri\dist"
 ```
 
  * Download app-bundle and unzip it in apps-bundle:
