@@ -159,8 +159,6 @@ jobs:
 
           rm -r -fo `
           ${KOLIBRI_MODULE_PATH}/dist/cext/cp27, `
-          ${KOLIBRI_MODULE_PATH}/dist/cext/cp34, `
-          ${KOLIBRI_MODULE_PATH}/dist/cext/cp35, `
           ${KOLIBRI_MODULE_PATH}/dist/cext/cp36, `
           ${KOLIBRI_MODULE_PATH}/dist/cext/cp38, `
           ${KOLIBRI_MODULE_PATH}/dist/cext/cp39, `
