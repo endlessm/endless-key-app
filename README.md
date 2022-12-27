@@ -16,7 +16,7 @@ launch the Kolibri server with a minimal configuration.
 
 ### Requirements
 
-- Python 3.7
+- Python 3.9
 
 ## Steps to build:
 
