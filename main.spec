@@ -35,6 +35,7 @@ a = Analysis(
                  'wsgiref',
                  'wsgiref.headers',
                  'wsgiref.util',
+                 'wsgiref.simple_server',
                  'xml.etree',
                  'xml.etree.ElementTree',
                  'distutils.version',
