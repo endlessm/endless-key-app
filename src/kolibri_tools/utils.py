@@ -7,7 +7,6 @@ from collections import Mapping
 from config import KOLIBRI_PORT, KOLIBRI_ZIP_PORT
 from kolibri.plugins import config as plugins_config
 from kolibri.plugins.utils import enable_plugin, disable_plugin
-from kolibri.plugins.registry import registered_plugins
 
 
 # These Kolibri plugins conflict with the plugins listed in REQUIRED_PLUGINS
@@ -43,7 +42,6 @@ def _enable_kolibri_plugin(plugin_name: str, optional=False) -> bool:
 
     if plugin_name not in plugins_config.ACTIVE_PLUGINS:
         logging.info(f"Enabling plugin {plugin_name}")
-        registered_plugins.register_plugins([plugin_name])
         enable_plugin(plugin_name)
 
     return True
@@ -73,12 +71,10 @@ def start_kolibri_server():
 
 def get_initialize_url(next_url=None):
     from kolibri.utils.cli import initialize
-    from kolibri.plugins.registry import registered_plugins
 
     # The start_kolibri_server function is typically run in a different thread or process
     # than the app, so for get_initialize_url to work, we need to initialize Kolibri
     # in the app process as well.
-    registered_plugins.register_plugins(['kolibri.plugins.app'])
     initialize()
 
     from kolibri.plugins.app.utils import interface
