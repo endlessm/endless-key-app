@@ -134,18 +134,18 @@ async function loadKolibriEnv(useKey) {
 async function getLoadingScreen() {
   const defaultLoading = path.join(__dirname, 'Kolibri', 'assets', '_load.html');
 
-  const loading = path.join(
+  const welcome = path.join(
     KOLIBRI_EXTENSIONS,
     'kolibri_explore_plugin',
-    'loadingScreen',
+    'welcomeScreen',
     'index.html',
   );
 
   try {
-    await fsPromises.access(loading);
-    return loading;
+    await fsPromises.access(welcome);
+    return welcome;
   } catch (err) {
-    console.log(`Loading screen not found ${loading}`);
+    console.log(`Welcome screen not found ${welcome}`);
   }
 
   return defaultLoading;
