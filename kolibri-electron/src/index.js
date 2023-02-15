@@ -184,7 +184,7 @@ const detectUSBChanges = () => {
   getEndlessKeyDataPath().then((keyData) => {
     // Notify the webview about the USB
     // setHasUSB should be defined as a global function in the loaded HTML
-    mainWindow.webContents.executeJavaScript(`setHasUSB(${!!keyData})`, true);
+    mainWindow.webContents.executeJavaScript(`WelcomeApp.setHasUSB(${!!keyData})`, true);
   }).catch((err) => {
     console.error(err);
   }).finally(() => {
@@ -245,9 +245,9 @@ async function createWindow() {
   await mainWindow.loadFile(await getLoadingScreen());
   // Only show the welcome workflow if the KOLIBRI_HOME is not created
   if (!fs.existsSync(KOLIBRI_HOME)) {
-    mainWindow.webContents.executeJavaScript('show_welcome()', true);
+    mainWindow.webContents.executeJavaScript('WelcomeApp.showWelcome()', true);
   } else if (await requireUSBConnected()) {
-    mainWindow.webContents.executeJavaScript('show_endless_key()', true);
+    mainWindow.webContents.executeJavaScript('WelcomeApp.showConnectKeyRequired()', true);
   } else {
     DETECT_USB_CHANGES = false;
     loadKolibriEnv(fs.existsSync(USB_CONTENT_FLAG_FILE)).then(() => {
@@ -265,12 +265,12 @@ const reloadKolibri = () => {
 
   if (loadRetries < maxRetries) {
     console.log('Kolibri server not starting, retrying...');
-    contents.executeJavaScript('show_retry()', true);
+    contents.executeJavaScript('WelcomeApp.showLoadingRetry()', true);
     loadRetries++;
     runKolibri();
   } else {
     console.log('Kolibri server not starting');
-    contents.executeJavaScript('show_error()', true);
+    contents.executeJavaScript('WelcomeApp.showLoadingError()', true);
   }
 }
 
