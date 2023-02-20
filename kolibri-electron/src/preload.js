@@ -1,12 +1,12 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
-contextBridge.exposeInMainWorld('EndlessAPI', {
+contextBridge.exposeInMainWorld('WelcomeWrapper', {
     // Triggers the Kolibri load, configured to not use the USB
-    load: () => {
+    startWithNetwork: (packId) => {
         ipcRenderer.send('load', { usb: false });
     },
     // Triggers the Kolibri load, configured to use the USB content
-    loadWithUSB: () => {
+    startWithUSB: () => {
         ipcRenderer.send('load', { usb: true });
     },
 });
