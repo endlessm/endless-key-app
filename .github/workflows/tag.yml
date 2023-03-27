@@ -20,6 +20,7 @@ jobs:
 
       - name: Have a new tag string
         id: have_new_tag_string
+        shell: pwsh
         run: |
           $describe = (git describe --always --tags --long --match 'v*')
           $ver_arr = $describe -split '[-v\.]'
@@ -33,7 +34,7 @@ jobs:
           } else {
             $tag_str = ""
           }
-          echo "::set-output name=tag_string::$tag_str"
+          echo "tag_string=$tag_str" >> $Env:GITHUB_OUTPUT
 
       - name: Create a new tag
         if: steps.have_new_tag_string.outputs.tag_string
