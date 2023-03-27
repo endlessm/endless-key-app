@@ -13,13 +13,14 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           # Need to fetch everything so that 'git describe' can see the tags
           fetch-depth: 0
 
       - name: Have a new tag string
         id: have_new_tag_string
+        shell: pwsh
         run: |
           $describe = (git describe --always --tags --long --match 'v*')
           $ver_arr = $describe -split '[-v\.]'
@@ -33,10 +34,11 @@ jobs:
           } else {
             $tag_str = ""
           }
-          echo "::set-output name=tag_string::$tag_str"
+          echo "tag_string=$tag_str" >> $Env:GITHUB_OUTPUT
 
       - name: Create a new tag
         if: steps.have_new_tag_string.outputs.tag_string
+        # TODO: https://github.com/negz/create-tag/issues/14
         uses: negz/create-tag@v1
         with:
           version: ${{ steps.have_new_tag_string.outputs.tag_string }}
