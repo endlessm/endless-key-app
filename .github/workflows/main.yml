@@ -266,7 +266,7 @@ jobs:
         shell: pwsh
 
       - name: Upload unsigned package
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: "endlesskey_${{ matrix.architecture }}.appx"
           path: "endlesskey_${{ matrix.architecture }}.appx"
@@ -284,7 +284,7 @@ jobs:
 
       - name: Upload self-signed package for testing
         if: steps.sign_for_testing.outcome == 'success'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: "endlesskey_${{ matrix.architecture }}.selfsigned.appx"
           path: "endlesskey_${{ matrix.architecture }}.selfsigned.appx"
