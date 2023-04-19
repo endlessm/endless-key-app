@@ -110,8 +110,8 @@ jobs:
         run: |
           # Precompile the py as pyc files
           python.exe -m compileall src\kolibri\ -b
-          # Remove py source files
-          Get-Childitem -Path src\kolibri\ -Include *.py -File -Recurse | Remove-Item -Force
+          # Remove py source files, except the DB migrations https://github.com/endlessm/endless-key-app/pull/99
+          Get-Childitem -Path src\kolibri\ -Include *.py -File -Recurse | where-object fullname -notlike "*\migrations\*.py" | Remove-Item -Force
           # Build as a Windows executable binary
           pyinstaller.exe --noconfirm main.spec
           # Remove the __pycache__
