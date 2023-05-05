@@ -85,7 +85,7 @@ function setupProvision() {
   env.KOLIBRI_AUTOMATIC_PROVISION_FILE = provision_file;
 }
 
-async function loadKolibriEnv(useKey) {
+async function loadKolibriEnv(useKey, packId) {
   console.log(`loading kolibri env, using USB: ${useKey}`);
   env.KOLIBRI_HOME = KOLIBRI_HOME;
   env.PYTHONPATH = KOLIBRI_EXTENSIONS;
@@ -104,6 +104,11 @@ async function loadKolibriEnv(useKey) {
   }
 
   if (!useKey) {
+    if (packId != "") {
+      console.log(`loading kolibri env, using package: ${packId}`);
+      env.KOLIBRI_INITIAL_CONTENT_PACK = packId;
+    }
+
     setupProvision();
     return false;
   }
@@ -250,7 +255,7 @@ async function createWindow() {
     mainWindow.webContents.executeJavaScript('WelcomeApp.showConnectKeyRequired()', true);
   } else {
     DETECT_USB_CHANGES = false;
-    loadKolibriEnv(fs.existsSync(USB_CONTENT_FLAG_FILE)).then(() => {
+    loadKolibriEnv(fs.existsSync(USB_CONTENT_FLAG_FILE), '').then(() => {
       runKolibri();
     });
   }
@@ -312,7 +317,10 @@ app.on('ready', () => {
 
   ipcMain.on('load', (_event, data) => {
     DETECT_USB_CHANGES = false;
-    loadKolibriEnv(data.usb).then(() => {
+    if (!('pack' in data)) {
+      data['pack'] = '';
+    }
+    loadKolibriEnv(data.usb, data.pack).then(() => {
       runKolibri();
     });
   });
