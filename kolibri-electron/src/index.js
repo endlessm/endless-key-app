@@ -113,6 +113,11 @@ async function loadKolibriEnv(useKey, packId) {
     return false;
   }
 
+  if (packId == "") {
+    console.log('loading kolibri env, using EK IGUANA PAGE');
+    env.KOLIBRI_USE_EK_IGUANA_PAGE = "1";
+  }
+
   const keyData = await getEndlessKeyDataPath();
   if (!keyData) {
     setupProvision();
