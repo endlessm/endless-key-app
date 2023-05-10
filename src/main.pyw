@@ -1,5 +1,6 @@
 import builtins
 import datetime
+import io
 import logging
 import os
 import sys
@@ -11,10 +12,16 @@ from kolibri_tools.utils import initialize_plugins
 from kolibri_tools.utils import start_kolibri_server
 from multiprocessing import freeze_support
 
-class LoggerWriter(object):
+class LoggerWriter(io.IOBase):
     def __init__(self, writer):
         self._writer = writer
         self._msg = ''
+
+    def readable(self):
+        return False
+   
+    def writable(self):
+        return True
 
     def write(self, message):
         self._msg = self._msg + message

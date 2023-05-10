@@ -19,6 +19,7 @@ a = Analysis(
                  'html.parser',
                  'cgi',
                  'pickletools',
+                 'dataclasses',
                  'email.mime',
                  'email.mime.base',
                  'email.mime.message',

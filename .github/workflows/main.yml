@@ -66,8 +66,8 @@ jobs:
 
       - name: Prep kolibri dist
         env:
-          KOLIBRI_WHL_URL: 'https://github.com/endlessm/kolibri-explore-plugin/releases/download/v5.8.0/kolibri-0.16.0.dev0+git.20220928203123-py2.py3-none-any.whl'
-          KOLIBRI_WHL_FILENAME: "kolibri-0.16.0.dev0+git.20220928203123-py2.py3-none-any.whl"
+          KOLIBRI_WHL_URL: 'https://github.com/learningequality/kolibri/releases/download/v0.16.0-alpha12/kolibri-0.16.0a12-py2.py3-none-any.whl'
+          KOLIBRI_WHL_FILENAME: "kolibri-0.16.0a12-py2.py3-none-any.whl"
         run: |
           C:\msys64\usr\bin\wget.exe -O $env:KOLIBRI_WHL_FILENAME $env:KOLIBRI_WHL_URL
           pip install $env:KOLIBRI_WHL_FILENAME --target="src"
@@ -78,7 +78,7 @@ jobs:
 
       - name: Add kolibri_explore_plugin to Kolibri's dist packages
         run: |
-          pip install kolibri-explore-plugin~=5.0 --target="src\kolibri\dist"
+          pip install kolibri-explore-plugin~=6.0 --target="src\kolibri\dist"
 
       - uses: robinraju/release-downloader@v1.7
         with:
