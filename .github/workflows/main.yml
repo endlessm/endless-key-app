@@ -183,7 +183,7 @@ jobs:
           mv $ElectronDiretory kolibri-windows
 
           mv src/kolibri dist/Kolibri/kolibri
-          mv dist/Kolibri kolibri-windows/resources/app/src/
+          mv dist/Kolibri kolibri-windows/
           mv src/apps-bundle kolibri-windows/resources/app/src/
           mv src/collections kolibri-windows/resources/app/src/
 
