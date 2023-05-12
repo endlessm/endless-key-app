@@ -25,7 +25,8 @@ let maxRetries = 3;
 let django = null;
 
 let KOLIBRI_HOME_TEMPLATE = '';
-let KOLIBRI_EXTENSIONS = path.join(__dirname, 'Kolibri', 'kolibri', 'dist');
+let KOLIBRI_APPDIR = path.normalize(path.join(__dirname, '..', '..', '..', 'Kolibri'));
+let KOLIBRI_EXTENSIONS = path.join(KOLIBRI_APPDIR, 'kolibri', 'dist');
 let KOLIBRI_HOME = path.join(userData, 'endless-key');
 const METRICS_ID = 'endless-key-windows';
 const AUTOPROVISION_FILE = path.join(__dirname, 'automatic_provision.json');
@@ -142,7 +143,7 @@ async function loadKolibriEnv(useKey, packId) {
 }
 
 async function getLoadingScreen() {
-  const defaultLoading = path.join(__dirname, 'Kolibri', 'assets', '_load.html');
+  const defaultLoading = path.join(KOLIBRI_APPDIR, 'assets', '_load.html');
 
   const welcome = path.join(
     KOLIBRI_EXTENSIONS,
@@ -293,7 +294,7 @@ const runKolibri = () => {
 
   removePidFile();
 
-  django = child_process.spawn(path.join(__dirname, 'Kolibri', 'Kolibri.exe'));
+  django = child_process.spawn(path.join(KOLIBRI_APPDIR, 'Kolibri.exe'));
   django.stdout.on('data', (data) => {
     console.log(`Kolibri: ${data}`);
   });
