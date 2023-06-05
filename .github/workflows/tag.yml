@@ -13,6 +13,12 @@ jobs:
       tag_string: ${{ steps.have_new_tag_string.outputs.tag_string }}
 
     steps:
+      - name: Set up Git environment
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          git config --global user.name ${{ github.actor }}
+          git config --global user.email ${{ github.actor }}@github.com
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -39,12 +45,12 @@ jobs:
 
       - name: Create a new tag
         if: steps.have_new_tag_string.outputs.tag_string
-        # TODO: https://github.com/negz/create-tag/issues/14
-        uses: negz/create-tag@v1
-        with:
+        run: |
+          git tag -a $version -m $message
+          git push origin $version
+        env:
           version: ${{ steps.have_new_tag_string.outputs.tag_string }}
           message: "Release ${{ steps.have_new_tag_string.outputs.tag_string }}"
-          token: ${{ secrets.GITHUB_TOKEN }}
 
   build_for_tag:
     needs: tag
