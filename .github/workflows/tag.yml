@@ -3,6 +3,7 @@ name: Tag Weekly
 on:
   schedule:
     - cron: '32 18 * * SAT'
+  workflow_call:
   workflow_dispatch:
 
 jobs:

@@ -1,0 +1,36 @@
+name: Bump_Version
+
+on:
+  repository_dispatch:
+    types: [kolibri-explore-plugin-release]
+
+jobs:
+  bump-version:
+    runs-on: windows-latest
+
+    steps:
+      - name: Set up Git environment
+        run: |
+          git config --global user.name ${{ github.actor }}
+          git config --global user.email ${{ github.actor }}@github.com
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # When there are multiple matched tags at the same commit, "git describe"
+      # only gets the first matched tag, not the latest one. That leads generate
+      # conflicted tag next time, due to the same tag name. So, append a dummy
+      # commit here.
+      - name: Append a new commit for new kolibri-explore-plugin release
+        if: ${{ github.event.action == 'kolibri-explore-plugin-release' }}
+        shell: pwsh
+        run: |
+          git commit --allow-empty -m "Bump kolibri-explore-plugin version to $VERSION"
+        env:
+          VERSION: ${{ github.event.client_payload.VERSION }}
+
+
+  create_tag:
+    needs: bump-version
+    uses: ./.github/workflows/tag.yml
+    secrets: inherit
