@@ -33,4 +33,6 @@ jobs:
   create_tag:
     needs: bump-version
     uses: ./.github/workflows/tag.yml
+    with:
+      kep_version: ${{ github.event.client_payload.VERSION }}
     secrets: inherit

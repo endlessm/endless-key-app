@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '32 18 * * SAT'
   workflow_call:
+    inputs:
+      kep_version:
+        description: 'The version of kolibri-explore-plugin'
+        default: ''
+        type: string
   workflow_dispatch:
 
 jobs:
@@ -29,19 +34,40 @@ jobs:
         id: have_new_tag_string
         shell: pwsh
         run: |
+          $kep_updated = 0
+
+          # Split endless-key-app's tag into fields
           $describe = (git describe --always --tags --long --match 'v*')
           $ver_arr = $describe -split '[-v\.]'
           $major = $ver_arr[1]
           $minor = $ver_arr[2]
           $build = $ver_arr[3] -as [int]
           $revision = $ver_arr[4]
+
+          if ($kep_version -ne '') {
+            # Split kolibri-explore-plugin's version into fields
+            $kep_ver_arr = $kep_version -split '[-v\.]'
+            $kep_major = $kep_ver_arr[1]
+            $kep_minor = $kep_ver_arr[2]
+
+            if ($kep_major -ne $major -or $kep_minor -ne $minor)
+            {
+              $major = $kep_major
+              $minor = $kep_minor
+              $build = 0
+              $kep_updated = 1
+            }
+          }
+
           # Do not create a new tag if latest tag is at HEAD
-          if ($revision -ne 0) {
+          if ($kep_updated -or $revision -ne 0) {
             $tag_str = "v" + $major + "." + $minor + "." + ($build + 1)
           } else {
             $tag_str = ""
           }
           echo "tag_string=$tag_str" >> $Env:GITHUB_OUTPUT
+        env:
+          kep_version: ${{ inputs.kep_version }}
 
       - name: Create a new tag
         if: steps.have_new_tag_string.outputs.tag_string
