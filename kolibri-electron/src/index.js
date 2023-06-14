@@ -91,7 +91,6 @@ async function loadKolibriEnv(useKey, packId) {
   env.KOLIBRI_HOME = KOLIBRI_HOME;
   env.PYTHONPATH = KOLIBRI_EXTENSIONS;
   env.KOLIBRI_APPS_BUNDLE_PATH = path.join(__dirname, "apps-bundle", "apps");
-  env.KOLIBRI_CONTENT_COLLECTIONS_PATH = path.join(__dirname, "collections");
 
   const APPXMSIX_PATTERN = path.join(env.PROGRAMFILES, "WindowsApps");
   if (__dirname.includes(APPXMSIX_PATTERN)) {

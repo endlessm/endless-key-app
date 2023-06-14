@@ -90,16 +90,6 @@ jobs:
         run: |
           7z x apps-bundle.zip -osrc/apps-bundle
 
-      - name: Download the collections manifest
-        uses: actions/checkout@v3
-        with:
-          repository: endlessm/endless-key-collections
-          path: collections
-
-      - name: Add endless-key-collections to Kolibri's dist package
-        run: |
-          mv collections/json src/collections
-
       - name: Patch Kolibri
         run: |
           C:\msys64\usr\bin\patch.exe src\kolibri\core\content\tasks.py patches\0001-Add-track-progress-information-to-channelimport.patch
@@ -185,7 +175,6 @@ jobs:
           mv src/kolibri dist/Kolibri/kolibri
           mv dist/Kolibri kolibri-windows/
           mv src/apps-bundle kolibri-windows/resources/app/src/
-          mv src/collections kolibri-windows/resources/app/src/
 
       - name: Compress
         run: Compress-Archive -Path kolibri-windows\* -DestinationPath kolibri-windows_${{ matrix.architecture }}.zip
