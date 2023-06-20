@@ -80,7 +80,7 @@ jobs:
         run: |
           pip install kolibri-explore-plugin~=6.0 --target="src\kolibri\dist"
 
-      - uses: robinraju/release-downloader@v1.7
+      - uses: robinraju/release-downloader@v1.8
         with:
           repository: "endlessm/kolibri-explore-plugin"
           latest: true
@@ -90,15 +90,18 @@ jobs:
         run: |
           7z x apps-bundle.zip -osrc/apps-bundle
 
-      - name: Download the collections manifest
-        uses: actions/checkout@v3
+      - name: Download collections manifest files
+        uses: robinraju/release-downloader@v1.8
         with:
           repository: endlessm/endless-key-collections
-          path: collections
+          latest: true
+          tarBall: true
+          extract: true
 
       - name: Add endless-key-collections to Kolibri's dist package
         run: |
-          mv collections/json src/collections
+          mkdir src/collections
+          mv endlessm-endless-key-collections-*/json/*.json src/collections
 
       - name: Patch Kolibri
         run: |
