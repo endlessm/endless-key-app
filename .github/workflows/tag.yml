@@ -3,18 +3,40 @@ name: Tag Weekly
 on:
   schedule:
     - cron: '32 18 * * SAT'
+  workflow_call:
+    inputs:
+      kep_version:
+        description: 'The version of kolibri-explore-plugin'
+        default: ''
+        type: string
   workflow_dispatch:
 
 jobs:
   tag:
     runs-on: windows-latest
+    env:
+      branch: ${{ github.ref }}
     outputs:
       tag_string: ${{ steps.have_new_tag_string.outputs.tag_string }}
 
     steps:
+      - name: Set up Git environment
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          git config --global user.name ${{ github.actor }}
+          git config --global user.email ${{ github.actor }}@github.com
+
+      - name: Set branch if this is triggered by kolibri-explore-plugin release flow
+        if: ${{ inputs.kep_version != '' }}
+        run: |
+          # The kolibri-explore-plugin release flow will append a new commit to master branch.
+          # Therefor, the github.ref is not at the latest commit. Checkout master instead.
+          $env:branch = "master"
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
+          ref: ${{ env.branch }}
           # Need to fetch everything so that 'git describe' can see the tags
           fetch-depth: 0
 
@@ -22,28 +44,49 @@ jobs:
         id: have_new_tag_string
         shell: pwsh
         run: |
+          $kep_updated = 0
+
+          # Split endless-key-app's tag into fields
           $describe = (git describe --always --tags --long --match 'v*')
           $ver_arr = $describe -split '[-v\.]'
           $major = $ver_arr[1]
           $minor = $ver_arr[2]
           $build = $ver_arr[3] -as [int]
           $revision = $ver_arr[4]
+
+          if ($kep_version -ne '') {
+            # Split kolibri-explore-plugin's version into fields
+            $kep_ver_arr = $kep_version -split '[-v\.]'
+            $kep_major = $kep_ver_arr[1]
+            $kep_minor = $kep_ver_arr[2]
+
+            if ($kep_major -ne $major -or $kep_minor -ne $minor)
+            {
+              $major = $kep_major
+              $minor = $kep_minor
+              $build = 0
+              $kep_updated = 1
+            }
+          }
+
           # Do not create a new tag if latest tag is at HEAD
-          if ($revision -ne 0) {
+          if ($kep_updated -or $revision -ne 0) {
             $tag_str = "v" + $major + "." + $minor + "." + ($build + 1)
           } else {
             $tag_str = ""
           }
           echo "tag_string=$tag_str" >> $Env:GITHUB_OUTPUT
+        env:
+          kep_version: ${{ inputs.kep_version }}
 
       - name: Create a new tag
         if: steps.have_new_tag_string.outputs.tag_string
-        # TODO: https://github.com/negz/create-tag/issues/14
-        uses: negz/create-tag@v1
-        with:
+        run: |
+          git tag -a $version -m $message
+          git push origin $version
+        env:
           version: ${{ steps.have_new_tag_string.outputs.tag_string }}
           message: "Release ${{ steps.have_new_tag_string.outputs.tag_string }}"
-          token: ${{ secrets.GITHUB_TOKEN }}
 
   build_for_tag:
     needs: tag

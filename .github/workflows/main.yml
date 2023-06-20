@@ -18,10 +18,20 @@ jobs:
     strategy:
       matrix:
         architecture: [x64]
+    env:
+      branch: ${{ github.ref }}
 
     steps:
+      - name: Set branch if this is triggered by workflow_call
+        if: startsWith(inputs.tag_name, 'v')
+        run: |
+          # The github.ref is not at the tag, if it is triggered by workflow_call
+          $env:branch = ${{ inputs.tag_name }}
+
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          ref: ${{ env.branch }}
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -207,11 +217,20 @@ jobs:
     strategy:
       matrix:
         architecture: [x64]
+    env:
+      branch: ${{ github.ref }}
 
     steps:
+      - name: Set branch if this is triggered by workflow_call
+        if: startsWith(inputs.tag_name, 'v')
+        run: |
+          # The github.ref is not at the tag, if it is triggered by workflow_call
+          $env:branch = ${{ inputs.tag_name }}
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
+          ref: ${{ env.branch }}
           # Need to fetch everything so that 'git describe' can see the tags
           fetch-depth: 0
 
