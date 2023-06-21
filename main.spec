@@ -41,6 +41,8 @@ a = Analysis(
                  'xml.etree.ElementTree',
                  'distutils.version',
                  '_pyio',
+                 'kolibri_tools.endless_key_settings',
+                 'kolibri_tools.middleware',
     ],
     excludes=['kolibri'],
     hookspath=[],
