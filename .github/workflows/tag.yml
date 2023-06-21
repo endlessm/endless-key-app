@@ -31,7 +31,7 @@ jobs:
         run: |
           # The kolibri-explore-plugin release flow will append a new commit to master branch.
           # Therefor, the github.ref is not at the latest commit. Checkout master instead.
-          $env:branch = "master"
+          echo "branch=master" >> $env:GITHUB_ENV
 
       - name: Checkout
         uses: actions/checkout@v3
