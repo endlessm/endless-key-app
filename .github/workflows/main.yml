@@ -130,6 +130,14 @@ jobs:
           # Remove the __pycache__
           Get-Childitem -Path src\kolibri\ -Include __pycache__ -Directory -Recurse | Remove-Item -Recurse -Force
 
+      - name: Upload Pyinstaller logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: "pyinstaller-logs_${{ matrix.architecture }}"
+          path: |
+            build\main\warn-main.txt
+            build\main\xref-main.html
+
       - name: Install electron-forge
         working-directory: kolibri-electron
         run: yarn global add @electron-forge/cli
