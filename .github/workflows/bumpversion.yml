@@ -25,7 +25,7 @@ jobs:
         if: ${{ github.event.action == 'kolibri-explore-plugin-release' }}
         shell: pwsh
         run: |
-          git commit --allow-empty -m "Bump kolibri-explore-plugin version to $VERSION"
+          git commit --allow-empty -m "Bump kolibri-explore-plugin version to $env:VERSION"
         env:
           VERSION: ${{ github.event.client_payload.VERSION }}
 
