@@ -20,12 +20,6 @@ jobs:
       tag_string: ${{ steps.have_new_tag_string.outputs.tag_string }}
 
     steps:
-      - name: Set up Git environment
-        if: ${{ github.event_name == 'workflow_dispatch' }}
-        run: |
-          git config --global user.name ${{ github.actor }}
-          git config --global user.email ${{ github.actor }}@github.com
-
       - name: Set branch if this is triggered by kolibri-explore-plugin release flow
         if: ${{ inputs.kep_version != '' }}
         run: |
@@ -78,6 +72,12 @@ jobs:
           echo "tag_string=$tag_str" >> $Env:GITHUB_OUTPUT
         env:
           kep_version: ${{ inputs.kep_version }}
+
+      - name: Set up Git environment
+        if: steps.have_new_tag_string.outputs.tag_string
+        run: |
+          git config --global user.name ${{ github.actor }}
+          git config --global user.email ${{ github.actor }}@github.com
 
       - name: Create a new tag
         if: steps.have_new_tag_string.outputs.tag_string
