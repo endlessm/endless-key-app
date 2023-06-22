@@ -16,6 +16,7 @@ jobs:
     runs-on: windows-latest
     env:
       branch: ${{ github.ref }}
+      branch_to_push: ${{ github.ref_name }}
     outputs:
       tag_string: ${{ steps.have_new_tag_string.outputs.tag_string }}
 
@@ -26,6 +27,7 @@ jobs:
           # The kolibri-explore-plugin release flow will append a new commit to master branch.
           # Therefor, the github.ref is not at the latest commit. Checkout master instead.
           echo "branch=master" >> $env:GITHUB_ENV
+          echo "branch_to_push=master" >> $env:GITHUB_ENV
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -83,7 +85,7 @@ jobs:
         if: steps.have_new_tag_string.outputs.tag_string
         run: |
           git tag -a $env:version -m $env:message
-          git push origin $env:version
+          git push origin $env:version $env:branch_to_push
         env:
           version: ${{ steps.have_new_tag_string.outputs.tag_string }}
           message: "Release ${{ steps.have_new_tag_string.outputs.tag_string }}"
