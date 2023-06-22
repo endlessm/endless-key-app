@@ -71,8 +71,6 @@ sys.path.insert(0, extra_python_path)
 sys.path.insert(0, os.path.join(extra_python_path, "kolibri", "dist"))
 
 KOLIBRI_ROOT_URL = 'http://localhost:{}'.format(KOLIBRI_PORT)
-if not "DJANGO_SETTINGS_MODULE" in os.environ:
-    os.environ["DJANGO_SETTINGS_MODULE"] = "kolibri_tools.endless_key_settings"
 
 
 class Application:
