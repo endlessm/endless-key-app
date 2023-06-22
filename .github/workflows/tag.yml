@@ -16,22 +16,18 @@ jobs:
     runs-on: windows-latest
     env:
       branch: ${{ github.ref }}
+      branch_to_push: ${{ github.ref_name }}
     outputs:
       tag_string: ${{ steps.have_new_tag_string.outputs.tag_string }}
 
     steps:
-      - name: Set up Git environment
-        if: ${{ github.event_name == 'workflow_dispatch' }}
-        run: |
-          git config --global user.name ${{ github.actor }}
-          git config --global user.email ${{ github.actor }}@github.com
-
       - name: Set branch if this is triggered by kolibri-explore-plugin release flow
         if: ${{ inputs.kep_version != '' }}
         run: |
           # The kolibri-explore-plugin release flow will append a new commit to master branch.
           # Therefor, the github.ref is not at the latest commit. Checkout master instead.
           echo "branch=master" >> $env:GITHUB_ENV
+          echo "branch_to_push=master" >> $env:GITHUB_ENV
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -79,11 +75,17 @@ jobs:
         env:
           kep_version: ${{ inputs.kep_version }}
 
+      - name: Set up Git environment
+        if: steps.have_new_tag_string.outputs.tag_string
+        run: |
+          git config --global user.name ${{ github.actor }}
+          git config --global user.email ${{ github.actor }}@github.com
+
       - name: Create a new tag
         if: steps.have_new_tag_string.outputs.tag_string
         run: |
           git tag -a $env:version -m $env:message
-          git push origin $env:version
+          git push origin $env:version $env:branch_to_push
         env:
           version: ${{ steps.have_new_tag_string.outputs.tag_string }}
           message: "Release ${{ steps.have_new_tag_string.outputs.tag_string }}"
