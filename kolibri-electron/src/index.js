@@ -89,6 +89,7 @@ function setupProvision() {
 async function loadKolibriEnv(useKey, packId) {
   console.log(`loading kolibri env, using USB: ${useKey}`);
   env.KOLIBRI_HOME = KOLIBRI_HOME;
+  env.DJANGO_SETTINGS_MODULE = "kolibri_tools.endless_key_settings";
   env.PYTHONPATH = KOLIBRI_EXTENSIONS;
   env.KOLIBRI_APPS_BUNDLE_PATH = path.join(__dirname, "apps-bundle", "apps");
   env.KOLIBRI_CONTENT_COLLECTIONS_PATH = path.join(__dirname, "collections");
