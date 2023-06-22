@@ -1,0 +1,32 @@
+From f2b687aa395bc850348f110084d77ec32defccda Mon Sep 17 00:00:00 2001
+From: Will Thompson <will@willthompson.co.uk>
+Date: Thu, 22 Jun 2023 17:31:54 -0400
+Subject: [PATCH] Partially revert "update zeroconf plugin to handle LISTEN
+ ADDRESS option."
+
+This partially reverts commit d2dc7af0f05577102a42c6085fc439a460895a14
+in an attempt to work around
+https://github.com/learningequality/kolibri/issues/10893.
+---
+ kolibri/utils/server.py | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/kolibri/utils/server.py b/kolibri/utils/server.py
+index f4bbbd38b0..9014073d25 100644
+--- a/kolibri/utils/server.py
++++ b/kolibri/utils/server.py
+@@ -274,10 +274,7 @@ class ServicesPlugin(SimplePlugin):
+ class ZeroConfPlugin(Monitor):
+     def __init__(self, bus, port):
+         self.port = port
+-        if conf.OPTIONS["Deployment"]["LISTEN_ADDRESS"] == "0.0.0.0":
+-            # Only bother doing dynamic updates of the zeroconf service if we're bound
+-            # to all available IP addresses.
+-            Monitor.__init__(self, bus, self.run, frequency=5)
++        Monitor.__init__(self, bus, self.run, frequency=5)
+         self.bus.subscribe("SERVING", self.SERVING)
+         self.bus.subscribe("UPDATE_ZEROCONF", self.UPDATE_ZEROCONF)
+         self.broadcast = None
+-- 
+2.30.2
+
