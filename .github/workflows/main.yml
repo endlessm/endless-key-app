@@ -40,16 +40,9 @@ jobs:
           python-version: 3.9
           architecture: ${{ matrix.architecture }}
 
-      - name: Set up Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-          cache: 'yarn'
-          cache-dependency-path: '**/yarn.lock'
-
       - name: Install python requirements
         run: |
-          pip install wheel
+          pip install wheel pywebview
 
       - name: Checkout pyinstaller
         uses: actions/checkout@v3
@@ -127,7 +120,7 @@ jobs:
           # Build as a Windows executable binary
           pyinstaller.exe --noconfirm main.spec
           # Remove the __pycache__
-          Get-Childitem -Path src\kolibri\ -Include __pycache__ -Directory -Recurse | Remove-Item -Recurse -Force
+          Get-Childitem -Path src\ -Include __pycache__ -Directory -Recurse | Remove-Item -Recurse -Force
 
       - name: Upload Pyinstaller logs
         uses: actions/upload-artifact@v3
@@ -136,24 +129,6 @@ jobs:
           path: |
             build\main\warn-main.txt
             build\main\xref-main.html
-
-      - name: Install electron-forge
-        working-directory: kolibri-electron
-        run: yarn global add @electron-forge/cli
-
-      - name: Install electron dependencies
-        working-directory: kolibri-electron
-        run: yarn install
-
-      - name: Build electron app
-        working-directory: kolibri-electron
-        run: |
-          if ("${{ matrix.architecture }}" -eq "x86") {
-            yarn make --arch=ia32
-          }
-          else {
-            yarn make
-          }
 
       - name: Kolibri cleanup
         run: |
@@ -199,13 +174,10 @@ jobs:
 
       - name: Create kolibri-windows
         run: |
-          $ElectronDiretory = (Get-Childitem -Path kolibri-electron\out\ -Directory kolibri-electron-win32*)[0]
-          mv $ElectronDiretory kolibri-windows
-
-          mv src/kolibri dist/Kolibri/kolibri
-          mv dist/Kolibri kolibri-windows/
-          mv src/apps-bundle kolibri-windows/resources/app/src/
-          mv src/collections kolibri-windows/resources/app/src/
+          mv src/kolibri dist/endless-key/kolibri
+          mv src/apps-bundle dist/endless-key/apps-bundle
+          mv src/collections dist/endless-key/collections
+          mv dist/endless-key kolibri-windows
 
       - name: Compress
         run: Compress-Archive -Path kolibri-windows\* -DestinationPath kolibri-windows_${{ matrix.architecture }}.zip
