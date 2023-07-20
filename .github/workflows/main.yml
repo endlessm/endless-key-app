@@ -42,7 +42,7 @@ jobs:
 
       - name: Install python requirements
         run: |
-          pip install pycparser==2.14 pyinstaller wheel pywebview
+          pip install six pycparser==2.14 pyinstaller wheel pywebview
 
       - name: Prep kolibri dist
         env:
