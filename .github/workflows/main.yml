@@ -42,31 +42,7 @@ jobs:
 
       - name: Install python requirements
         run: |
-          pip install wheel pywebview
-
-      - name: Checkout pyinstaller
-        uses: actions/checkout@v3
-        with:
-          repository: pyinstaller/pyinstaller
-          path: pyinstaller
-          ref: v5.1
-
-      - name: Build pyinstaller bootloader
-        run: |
-          if ("${{ matrix.architecture }}" -eq "x86") {
-            python waf all --target-arch=32bit
-          }
-          else {
-            python waf all
-          }
-        working-directory: pyinstaller/bootloader
-
-      - name: Install pyinstaller
-        run: |
-          python setup.py install
-        working-directory: pyinstaller
-        env:
-          PYINSTALLER_COMPILE_BOOTLOADER: 1
+          pip install pyinstaller wheel pywebview
 
       - name: Prep kolibri dist
         env:
