@@ -39,6 +39,7 @@ def setup_provision():
         except:
             provision_file = AUTOPROVISION_FILE
 
+    print("Load ENV: {provision_file}")
     os.environ['KOLIBRI_AUTOMATIC_PROVISION_FILE'] = provision_file
 
 def wait_for_kolibri_up(window):
