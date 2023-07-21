@@ -48,7 +48,7 @@ def wait_for_kolibri_up(window):
     window.load_url(f'{KOLIBRI}/explore')
 
 def start_kolibri(window):
-    os.environ['KOLIBRI_HOME'] = KOLIBRI_HOME
+    #os.environ['KOLIBRI_HOME'] = KOLIBRI_HOME
     os.environ['DJANGO_SETTINGS_MODULE'] = 'kolibri_tools.endless_key_settings'
     os.environ['PYTHONPATH'] = KOLIBRI_EXTENSIONS
     os.environ['KOLIBRI_APPS_BUNDLE_PATH'] = os.path.join(EKAPP_DIR, 'apps-bundle/apps')
