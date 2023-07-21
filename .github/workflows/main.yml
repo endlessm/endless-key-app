@@ -151,6 +151,7 @@ jobs:
       - name: Create kolibri-windows
         run: |
           mv src/kolibri dist/endless-key/kolibri
+          mv src/automatic_provision.json dist/endless-key/
           mv src/apps-bundle dist/endless-key/apps-bundle
           mv src/collections dist/endless-key/collections
           mv dist/endless-key kolibri-windows
