@@ -7,6 +7,7 @@ import time
 import webview
 
 from threading import Thread
+from multiprocessing import freeze_support
 
 NULL_PLUGIN_VERSION = '0'
 KOLIBRI = 'http://localhost:5000'
@@ -34,7 +35,7 @@ def start_kolibri():
     kolibri_app.run()
 
 def when_kolibri_up(url):
-    print(f'Change to {url}')
+    #print(f'Change to {url}')
     window.load_url(url)
 
 def wait_for_kolibri_up():
@@ -92,10 +93,22 @@ def open_handler():
         launch_kolibri()
 
 if __name__ == '__main__':
+    freeze_support()
+
+    # Monkey patch subprocess.Popen to hide the console on endless-key
+    # subcommands
+    import subprocess
+    orig = subprocess.Popen
+    def override(*args, **kwargs):
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        orig(*args, startupinfo=startupinfo, **kwargs)
+    subprocess.Popen = override
+
     load_env()
     api = Api()
     window = webview.create_window(
             'Endless Key',
             'kolibri/dist/kolibri_explore_plugin/welcomeScreen/index.html',
             js_api=api)
-    webview.start(open_handler, debug=True)
+    webview.start(open_handler, debug=False)
