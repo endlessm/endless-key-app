@@ -68,6 +68,10 @@ def start_kolibri_server():
 
     start.callback(KOLIBRI_PORT, zip_port=KOLIBRI_ZIP_PORT, background=False)
 
+def stop_kolibri_server():
+    from kolibri.utils.cli import stop
+
+    stop()
 
 def get_initialize_url(next_url=None):
     from kolibri.utils.cli import initialize

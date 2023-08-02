@@ -11,6 +11,7 @@ from config import KOLIBRI_IP
 from config import KOLIBRI_PORT
 from kolibri_tools.utils import initialize_plugins
 from kolibri_tools.utils import start_kolibri_server
+from kolibri_tools.utils import stop_kolibri_server
 from multiprocessing import freeze_support
 
 class LoggerWriter(io.IOBase):
@@ -114,6 +115,9 @@ class Application:
         logging.info("Preparing to start Kolibri server...")
         initialize_plugins()
         start_kolibri_server()
+
+    def stop(self):
+        stop_kolibri_server()
 
 
 if __name__ == "__main__":

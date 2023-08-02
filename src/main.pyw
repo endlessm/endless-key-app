@@ -30,6 +30,7 @@ def start_kolibri():
     from run_kolibri import Application
 
     kolibri_app = Application()
+    window.events.closed += kolibri_app.stop
     kolibri_app.run()
 
 def when_kolibri_up(url):
