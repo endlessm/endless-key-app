@@ -76,8 +76,8 @@ jobs:
 
       - name: Prep kolibri dist
         env:
-          KOLIBRI_WHL_URL: 'https://github.com/learningequality/kolibri/releases/download/v0.16.0-beta0/kolibri-0.16.0b0-py2.py3-none-any.whl'
-          KOLIBRI_WHL_FILENAME: "kolibri-0.16.0b0-py2.py3-none-any.whl"
+          KOLIBRI_WHL_URL: 'https://github.com/learningequality/kolibri/releases/download/v0.16.0-beta1/kolibri-0.16.0b1-py2.py3-none-any.whl'
+          KOLIBRI_WHL_FILENAME: "kolibri-0.16.0b1-py2.py3-none-any.whl"
         run: |
           C:\msys64\usr\bin\wget.exe -O $env:KOLIBRI_WHL_FILENAME $env:KOLIBRI_WHL_URL
           pip install $env:KOLIBRI_WHL_FILENAME --target="src"
