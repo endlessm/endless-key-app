@@ -5,8 +5,4 @@ contextBridge.exposeInMainWorld('WelcomeWrapper', {
     startWithNetwork: (packId) => {
         ipcRenderer.send('load', { usb: false, pack: packId });
     },
-    // Triggers the Kolibri load, configured to use the USB content
-    startWithUSB: () => {
-        ipcRenderer.send('load', { usb: true });
-    },
 });

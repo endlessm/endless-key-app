@@ -38,8 +38,6 @@ const LOCK_FILE = {
 
 const USB_CONTENT_FLAG_FILE = path.join(KOLIBRI_HOME, 'usb_content_flag');
 
-let DETECT_USB_CHANGES = true;
-
 function removePidFile() {
   const pidFile = path.join(KOLIBRI_HOME, 'server.pid');
   if (fs.existsSync(pidFile)) {
@@ -181,31 +179,6 @@ async function getPluginVersion() {
   return NULL_PLUGIN_VERSION;
 }
 
-async function requireUSBConnected() {
-  if (!fs.existsSync(USB_CONTENT_FLAG_FILE)) {
-    return false;
-  }
-
-  const keyData = await getEndlessKeyDataPath();
-  return !keyData;
-}
-
-const detectUSBChanges = () => {
-  console.log('Checking if the Endless Key USB is connected');
-
-  getEndlessKeyDataPath().then((keyData) => {
-    // Notify the webview about the USB
-    // setHasUSB should be defined as a global function in the loaded HTML
-    mainWindow.webContents.executeJavaScript(`WelcomeApp.setHasUSB(${!!keyData})`, true);
-  }).catch((err) => {
-    console.error(err);
-  }).finally(() => {
-    if (DETECT_USB_CHANGES) {
-      setTimeout(() => { detectUSBChanges(); }, 1000);
-    }
-  });
-};
-
 const waitForKolibriUp = () => {
   console.log('Kolibri server not yet started, checking again in one second...');
 
@@ -258,18 +231,13 @@ async function createWindow() {
   // Only show the welcome workflow if the KOLIBRI_HOME is not created
   if (!fs.existsSync(KOLIBRI_HOME)) {
     mainWindow.webContents.executeJavaScript('WelcomeApp.showWelcome()', true);
-  } else if (await requireUSBConnected()) {
-    mainWindow.webContents.executeJavaScript('WelcomeApp.showConnectKeyRequired()', true);
   } else {
-    DETECT_USB_CHANGES = false;
     loadKolibriEnv(fs.existsSync(USB_CONTENT_FLAG_FILE), '').then(() => {
       runKolibri();
     });
   }
 
   waitForKolibriUp(mainWindow);
-  // Check if there's an EK USB to notify to the interface
-  detectUSBChanges();
 };
 
 const reloadKolibri = () => {
@@ -323,7 +291,6 @@ app.on('ready', () => {
   createWindow();
 
   ipcMain.on('load', (_event, data) => {
-    DETECT_USB_CHANGES = false;
     if (!('pack' in data)) {
       data['pack'] = '';
     }
