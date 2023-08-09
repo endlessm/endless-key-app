@@ -101,17 +101,16 @@ jobs:
           7z x apps-bundle.zip -osrc/apps-bundle
 
       - name: Download collections manifest files
-        uses: robinraju/release-downloader@v1.8
-        with:
-          repository: endlessm/endless-key-collections
-          latest: true
-          tarBall: true
-          extract: true
+        run: |
+          $CollectionUri = 'https://github.com/endlessm/endless-key-collections/archive/refs/heads/main.zip'
+          $CollectionTarball = 'endless-key-collections.zip'
+          Invoke-WebRequest -Uri $CollectionUri -OutFile $CollectionTarball
+          Expand-Archive -Path $CollectionTarball -DestinationPath .
 
       - name: Add endless-key-collections to Kolibri's dist package
         run: |
           mkdir src/collections
-          mv endlessm-endless-key-collections-*/json/*.json src/collections
+          mv endless-key-collections-*/json/*.json src/collections
 
       - name: Patch Kolibri
         run: |
