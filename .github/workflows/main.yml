@@ -469,6 +469,19 @@ jobs:
             echo NULL > $dummy_screenshot
           }
 
+          echo "Going to create dummy trailers & their images for Application Payload creation:"
+          $xmlDoc.ProductDescription.Trailers.Trailer | ForEach-Object {
+            $dummy_trailer = "MSAppPayload/PDPs/en-us/" + $_.FileName
+            echo $dummy_trailer
+            echo NULL > $dummy_trailer
+
+            $_.Images.Image | ForEach-Object {
+              $dummy_image = "MSAppPayload/PDPs/en-us/" + $_.FileName
+              echo $dummy_image
+              echo NULL > $dummy_image
+            }
+          }
+
           New-SubmissionPackage `
             -ConfigPath "MSAppPayload/SBConfig.json" `
             -PDPRootPath "MSAppPayload/PDPs" `
