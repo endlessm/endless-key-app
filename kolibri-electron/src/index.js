@@ -31,45 +31,10 @@ let KOLIBRI_HOME = path.join(userData, 'endless-key');
 const METRICS_ID = 'endless-key-windows';
 const AUTOPROVISION_FILE = path.join(__dirname, 'automatic_provision.json');
 
-const LOCK_FILE = {
-  handler: null,
-  path: null,
-};
-
-const USB_CONTENT_FLAG_FILE = path.join(KOLIBRI_HOME, 'usb_content_flag');
-
-let DETECT_USB_CHANGES = true;
-
 function removePidFile() {
   const pidFile = path.join(KOLIBRI_HOME, 'server.pid');
   if (fs.existsSync(pidFile)) {
     fs.rmSync(pidFile);
-  }
-}
-
-async function getEndlessKeyDataPath() {
-  const drives = await drivelist.list();
-
-  const accessPromises = drives.map(async (drive) => {
-
-    const mountpoint = drive.mountpoints[0];
-
-    if (!mountpoint) {
-      throw Error("Drive is not mounted");
-    }
-
-    const keyData = path.join(mountpoint.path, 'KOLIBRI_DATA');
-
-    // thows an Error on fail
-    await fsPromises.access(keyData);
-    return keyData;
-  });
-
-  try {
-    const keyData = await Promise.any(accessPromises);
-    return keyData;
-  } catch (error) {
-    return undefined;
   }
 }
 
@@ -86,61 +51,23 @@ function setupProvision() {
   env.KOLIBRI_AUTOMATIC_PROVISION_FILE = provision_file;
 }
 
-async function loadKolibriEnv(useKey, packId) {
-  console.log(`loading kolibri env, using USB: ${useKey}`);
+async function loadKolibriEnv(packId) {
   env.KOLIBRI_HOME = KOLIBRI_HOME;
   env.DJANGO_SETTINGS_MODULE = "kolibri_tools.endless_key_settings";
   env.PYTHONPATH = KOLIBRI_EXTENSIONS;
   env.KOLIBRI_APPS_BUNDLE_PATH = path.join(__dirname, "apps-bundle", "apps");
   env.KOLIBRI_CONTENT_COLLECTIONS_PATH = path.join(__dirname, "collections");
 
-  const APPXMSIX_PATTERN = path.join(env.PROGRAMFILES, "WindowsApps");
-  if (__dirname.includes(APPXMSIX_PATTERN)) {
-    console.log('loading kolibri env, using as Windows APPX/MSIX application');
-    env.KOLIBRI_PROJECT = METRICS_ID;
+  console.log('loading kolibri env, using as Windows APPX/MSIX application');
+  env.KOLIBRI_PROJECT = METRICS_ID;
+
+  if (packId != "") {
+    console.log(`loading kolibri env, using package: ${packId}`);
+    env.KOLIBRI_INITIAL_CONTENT_PACK = packId;
   }
 
-  if (!env.KOLIBRI_PROJECT) {
-    console.log('loading kolibri env, using as Windows standalone application');
-    env.KOLIBRI_PROJECT = `${METRICS_ID}-standalone`;
-  }
-
-  if (!useKey) {
-    if (packId != "") {
-      console.log(`loading kolibri env, using package: ${packId}`);
-      env.KOLIBRI_INITIAL_CONTENT_PACK = packId;
-    }
-
-    setupProvision();
-    return false;
-  }
-
-  if (packId == "") {
-    console.log('loading kolibri env, using EK IGUANA PAGE');
-    env.KOLIBRI_USE_EK_IGUANA_PAGE = "1";
-  }
-
-  const keyData = await getEndlessKeyDataPath();
-  if (!keyData) {
-    setupProvision();
-    return false;
-  }
-
-  KOLIBRI_HOME_TEMPLATE = path.join(keyData, 'preseeded_kolibri_home');
-  env.KOLIBRI_CONTENT_FALLBACK_DIRS = path.join(keyData, 'content');
-
-  if (!fs.existsSync(KOLIBRI_HOME) && fs.existsSync(KOLIBRI_HOME_TEMPLATE)) {
-    await fsExtra.copy(KOLIBRI_HOME_TEMPLATE, KOLIBRI_HOME);
-    // Just create the flag file in the KOLIBRI_HOME
-    handler = await fsPromises.open(USB_CONTENT_FLAG_FILE, 'w');
-    handler.close();
-  }
-
-  // Lock USB
-  LOCK_FILE.path = path.join(keyData, 'lock');
-  LOCK_FILE.handler = await fsPromises.open(LOCK_FILE.path, 'w');
-
-  return true;
+  setupProvision();
+  return;
 }
 
 async function getLoadingScreen() {
@@ -180,31 +107,6 @@ async function getPluginVersion() {
 
   return NULL_PLUGIN_VERSION;
 }
-
-async function requireUSBConnected() {
-  if (!fs.existsSync(USB_CONTENT_FLAG_FILE)) {
-    return false;
-  }
-
-  const keyData = await getEndlessKeyDataPath();
-  return !keyData;
-}
-
-const detectUSBChanges = () => {
-  console.log('Checking if the Endless Key USB is connected');
-
-  getEndlessKeyDataPath().then((keyData) => {
-    // Notify the webview about the USB
-    // setHasUSB should be defined as a global function in the loaded HTML
-    mainWindow.webContents.executeJavaScript(`WelcomeApp.setHasUSB(${!!keyData})`, true);
-  }).catch((err) => {
-    console.error(err);
-  }).finally(() => {
-    if (DETECT_USB_CHANGES) {
-      setTimeout(() => { detectUSBChanges(); }, 1000);
-    }
-  });
-};
 
 const waitForKolibriUp = () => {
   console.log('Kolibri server not yet started, checking again in one second...');
@@ -258,18 +160,13 @@ async function createWindow() {
   // Only show the welcome workflow if the KOLIBRI_HOME is not created
   if (!fs.existsSync(KOLIBRI_HOME)) {
     mainWindow.webContents.executeJavaScript('WelcomeApp.showWelcome()', true);
-  } else if (await requireUSBConnected()) {
-    mainWindow.webContents.executeJavaScript('WelcomeApp.showConnectKeyRequired()', true);
   } else {
-    DETECT_USB_CHANGES = false;
-    loadKolibriEnv(fs.existsSync(USB_CONTENT_FLAG_FILE), '').then(() => {
+    loadKolibriEnv('').then(() => {
       runKolibri();
     });
   }
 
   waitForKolibriUp(mainWindow);
-  // Check if there's an EK USB to notify to the interface
-  detectUSBChanges();
 };
 
 const reloadKolibri = () => {
@@ -323,11 +220,10 @@ app.on('ready', () => {
   createWindow();
 
   ipcMain.on('load', (_event, data) => {
-    DETECT_USB_CHANGES = false;
     if (!('pack' in data)) {
       data['pack'] = '';
     }
-    loadKolibriEnv(data.usb, data.pack).then(() => {
+    loadKolibriEnv(data.pack).then(() => {
       runKolibri();
     });
   });
@@ -336,10 +232,4 @@ app.on('ready', () => {
 app.on('window-all-closed', () => {
   app.quit();
   removePidFile();
-  if (LOCK_FILE.handler) {
-    LOCK_FILE.handler.close();
-    if (fs.existsSync(LOCK_FILE.path)) {
-      fs.rmSync(LOCK_FILE.path);
-    }
-  }
 });
