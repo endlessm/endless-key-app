@@ -7,6 +7,7 @@ import sys
 
 from functools import partial
 
+from config import KOLIBRI_IP
 from config import KOLIBRI_PORT
 from kolibri_tools.utils import initialize_plugins
 from kolibri_tools.utils import start_kolibri_server
@@ -86,6 +87,7 @@ class Application:
         root_logger.addHandler(file_handler)
 
     def run(self):
+        self.ip = KOLIBRI_IP
         self.port = KOLIBRI_PORT
         self._init_log()
 
@@ -106,6 +108,7 @@ class Application:
         self.start_server()
 
     def start_server(self):
+        os.environ["KOLIBRI_LISTEN_ADDRESS"] = self.ip
         os.environ["KOLIBRI_HTTP_PORT"] = str(self.port)
 
         logging.info("Preparing to start Kolibri server...")
