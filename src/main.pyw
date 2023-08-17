@@ -106,6 +106,7 @@ class Application:
         self.start_server()
 
     def start_server(self):
+        os.environ["KOLIBRI_LISTEN_ADDRESS"] = "127.0.0.1"
         os.environ["KOLIBRI_HTTP_PORT"] = str(self.port)
 
         logging.info("Preparing to start Kolibri server...")

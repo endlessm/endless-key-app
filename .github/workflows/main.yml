@@ -115,6 +115,7 @@ jobs:
       - name: Patch Kolibri
         run: |
           C:\msys64\usr\bin\patch.exe src\kolibri\core\content\tasks.py patches\0001-Add-track-progress-information-to-channelimport.patch
+          C:\msys64\usr\bin\patch.exe -p1 <patches\0002-Partially-revert-update-zeroconf-plugin-to-handle-LI.patch
 
       - name: Build
         env:
