@@ -469,6 +469,13 @@ jobs:
             echo NULL > $dummy_screenshot
           }
 
+          echo "Going to create dummy additional assets for Application Payload creation:"
+          $xmlDoc.ProductDescription.AdditionalAssets.ChildNodes.FileName | ForEach-Object {
+            $dummy_assest = "MSAppPayload/PDPs/en-us/" + $_
+            echo $dummy_assest
+            echo NULL > $dummy_assest
+          }
+
           echo "Going to create dummy trailers & their images for Application Payload creation:"
           $xmlDoc.ProductDescription.Trailers.Trailer | ForEach-Object {
             $dummy_trailer = "MSAppPayload/PDPs/en-us/" + $_.FileName
