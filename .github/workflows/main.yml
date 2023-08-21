@@ -471,6 +471,7 @@ jobs:
 
           echo "Going to create dummy additional assets for Application Payload creation:"
           $xmlDoc.ProductDescription.AdditionalAssets.ChildNodes.FileName | ForEach-Object {
+            if ( $_ -eq '' ) { return }
             $dummy_assest = "MSAppPayload/PDPs/en-us/" + $_
             echo $dummy_assest
             echo NULL > $dummy_assest
