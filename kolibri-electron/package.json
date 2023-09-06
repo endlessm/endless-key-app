@@ -57,7 +57,7 @@
     "@electron-forge/maker-rpm": "^6.0.0",
     "@electron-forge/maker-squirrel": "^6.0.0",
     "@electron-forge/maker-zip": "^6.0.0",
-    "electron": "^22.3.18"
+    "electron": "^22.3.21"
   },
   "build": {
     "appId": "EndlessOSFoundation.EndlessKey"
