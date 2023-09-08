@@ -2,6 +2,7 @@ name: CI
 
 on:
   push:
+    branches: [master]
   pull_request:
   workflow_call:
     inputs:
@@ -101,16 +102,15 @@ jobs:
           7z x apps-bundle.zip -osrc/apps-bundle
 
       - name: Download collections manifest files
-        run: |
-          $CollectionUri = 'https://github.com/endlessm/endless-key-collections/archive/refs/heads/main.zip'
-          $CollectionTarball = 'endless-key-collections.zip'
-          Invoke-WebRequest -Uri $CollectionUri -OutFile $CollectionTarball
-          Expand-Archive -Path $CollectionTarball -DestinationPath .
+        uses: robinraju/release-downloader@v1.8
+        with:
+          repository: "endlessm/endless-key-collections"
+          latest: true
+          fileName: "collections.zip"
 
-      - name: Add endless-key-collections to Kolibri's dist package
+      - name: Add collections to Kolibri's dist package
         run: |
-          mkdir src/collections
-          mv endless-key-collections-*/json/*.json src/collections
+          7z x collections.zip -osrc/collections
 
       - name: Patch Kolibri
         run: |

@@ -35,9 +35,9 @@ launch the Kolibri server with a minimal configuration.
     https://github.com/endlessm/kolibri-explore-plugin/releases/latest/download/apps-bundle.zip
 ```
 
- * Download endless key collections, unzip and copy the `json` folder to `collections`:
+ * Download endless key collections and unzip it in `collections`:
 ```
-    https://github.com/endlessm/endless-key-collections/archive/refs/heads/main.zip
+    https://github.com/endlessm/endless-key-collections/releases/latest/download/collections.zip
 ```
 
  * Build kolibri-electron:
