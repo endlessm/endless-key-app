@@ -3,7 +3,9 @@
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
-  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10">
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  xmlns:win32dependencies="http://schemas.microsoft.com/appx/manifest/externaldependencies"
+  IgnorableNamespaces="win32dependencies">
   <Identity
     Name="EndlessOSFoundation.EndlessKey"
     Version="1.0.0.0"
@@ -23,6 +25,11 @@
       Name="Windows.Desktop"
       MinVersion="10.0.14316.0"
       MaxVersionTested="10.0.19041.0" />
+    <win32dependencies:ExternalDependency
+      Name="Microsoft.WebView2"
+      Publisher="CN=Microsoft Windows, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
+      MinVersion="1.1.1.1"
+      Optional="true" />
   </Dependencies>
   <Capabilities>
     <rescap:Capability Name="runFullTrust"/>
