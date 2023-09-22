@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow } = require('electron');
 const { env } = require('process');
 const path = require('path');
 const child_process = require('child_process');
@@ -6,8 +6,6 @@ const http = require('http');
 const fs = require('fs');
 const fsExtra = require('fs-extra');
 const fsPromises = require('fs').promises;
-const os = require('os');
-const drivelist = require('drivelist');
 const { shell } = require('electron');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -24,7 +22,6 @@ let maxRetries = 3;
 
 let django = null;
 
-let KOLIBRI_HOME_TEMPLATE = '';
 let KOLIBRI_APPDIR = path.normalize(path.join(__dirname, '..', '..', '..', 'Kolibri'));
 let KOLIBRI_EXTENSIONS = path.join(KOLIBRI_APPDIR, 'kolibri', 'dist');
 let KOLIBRI_HOME = path.join(userData, 'endless-key');
@@ -51,7 +48,7 @@ function setupProvision() {
   env.KOLIBRI_AUTOMATIC_PROVISION_FILE = provision_file;
 }
 
-async function loadKolibriEnv(packId) {
+async function loadKolibriEnv() {
   env.KOLIBRI_HOME = KOLIBRI_HOME;
   env.DJANGO_SETTINGS_MODULE = "kolibri_tools.endless_key_settings";
   env.PYTHONPATH = KOLIBRI_EXTENSIONS;
@@ -61,11 +58,6 @@ async function loadKolibriEnv(packId) {
   console.log('loading kolibri env, using as Windows APPX/MSIX application');
   env.KOLIBRI_PROJECT = METRICS_ID;
 
-  if (packId != "") {
-    console.log(`loading kolibri env, using package: ${packId}`);
-    env.KOLIBRI_INITIAL_CONTENT_PACK = packId;
-  }
-
   setupProvision();
   return;
 }
@@ -73,18 +65,18 @@ async function loadKolibriEnv(packId) {
 async function getLoadingScreen() {
   const defaultLoading = path.join(KOLIBRI_APPDIR, 'assets', '_load.html');
 
-  const welcome = path.join(
+  const loadingUrl = path.join(
     KOLIBRI_EXTENSIONS,
     'kolibri_explore_plugin',
-    'welcomeScreen',
+    'loadingScreen',
     'index.html',
   );
 
   try {
-    await fsPromises.access(welcome);
-    return welcome;
+    await fsPromises.access(loadingUrl);
+    return loadingUrl;
   } catch (err) {
-    console.log(`Welcome screen not found ${welcome}`);
+    console.log(`Loading screen not found ${loadingUrl}`);
   }
 
   return defaultLoading;
@@ -133,9 +125,6 @@ async function createWindow() {
     show:false,
     icon: path.join(__dirname, 'icon.png'),
     title: 'Endless Key',
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-    },
   });
   mainWindow.maximize();
   mainWindow.show();
@@ -157,14 +146,10 @@ async function createWindow() {
   mainWindow.webContents.setWindowOpenHandler(windowOpenHandler);
 
   await mainWindow.loadFile(await getLoadingScreen());
-  // Only show the welcome workflow if the KOLIBRI_HOME is not created
-  if (!fs.existsSync(KOLIBRI_HOME)) {
-    mainWindow.webContents.executeJavaScript('WelcomeApp.showWelcome()', true);
-  } else {
-    loadKolibriEnv('').then(() => {
-      runKolibri();
-    });
-  }
+
+  loadKolibriEnv().then(() => {
+    runKolibri();
+  });
 
   waitForKolibriUp(mainWindow);
 };
@@ -174,12 +159,12 @@ const reloadKolibri = () => {
 
   if (loadRetries < maxRetries) {
     console.log('Kolibri server not starting, retrying...');
-    contents.executeJavaScript('WelcomeApp.showLoadingRetry()', true);
+    contents.executeJavaScript('LoadingApp.showLoadingRetry()', true);
     loadRetries++;
     runKolibri();
   } else {
     console.log('Kolibri server not starting');
-    contents.executeJavaScript('WelcomeApp.showLoadingError()', true);
+    contents.executeJavaScript('LoadingApp.showLoadingError()', true);
   }
 }
 
@@ -218,15 +203,6 @@ const runKolibri = () => {
 
 app.on('ready', () => {
   createWindow();
-
-  ipcMain.on('load', (_event, data) => {
-    if (!('pack' in data)) {
-      data['pack'] = '';
-    }
-    loadKolibriEnv(data.pack).then(() => {
-      runKolibri();
-    });
-  });
 });
 
 app.on('window-all-closed', () => {
