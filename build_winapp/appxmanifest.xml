@@ -37,7 +37,7 @@
         Description="Endless Key"
         Square150x150Logo="assets/Windows_150x150Logo.png"
         Square44x44Logo="assets/Windows_44x44Logo.png"
-        BackgroundColor="#F15A22" />
+        BackgroundColor="transparent" />
       <Extensions>
         <uap3:Extension
           Category="windows.appExecutionAlias"
