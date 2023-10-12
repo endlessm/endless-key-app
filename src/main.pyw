@@ -21,7 +21,7 @@ from threading import Thread
 EKAPP_DIR = os.path.dirname(os.path.realpath(__file__))
 KOLIBRI_APPDIR = os.path.join(EKAPP_DIR, 'kolibri')
 KOLIBRI_EXTENSIONS = os.path.join(KOLIBRI_APPDIR, 'dist')
-KOLIBRI_HOME = os.path.join(os.path.expandvars('%APPDATA%'), 'endless-key')
+KOLIBRI_HOME = os.path.join(os.path.expandvars('%APPDATA%'), 'kolibri-electron', 'endless-key')
 KOLIBRI_ROOT_URL = 'http://localhost:{}'.format(KOLIBRI_PORT)
 METRICS_ID = 'endless-key-windows'
 AUTOPROVISION_FILE = os.path.join(EKAPP_DIR, 'automatic_provision.json')
@@ -186,6 +186,10 @@ class Application:
         time.sleep(5)
 
 
+def create_dir(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
 def setup_provision():
     # Copy the provision file because Kolibri removes after applying
     provision_file = os.path.join(EKAPP_DIR, 'provision.json')
@@ -199,6 +203,10 @@ def setup_provision():
     os.environ['KOLIBRI_AUTOMATIC_PROVISION_FILE'] = provision_file
 
 def load_env():
+    # kolibri can only create one level sub-directory for KOLIBRI_HOME.
+    # So, create KOLIBRI_HOME path here.
+    create_dir(KOLIBRI_HOME)
+
     os.environ['KOLIBRI_HOME'] = KOLIBRI_HOME
     os.environ['DJANGO_SETTINGS_MODULE'] = "kolibri_tools.endless_key_settings"
     os.environ['PYTHONPATH'] = KOLIBRI_EXTENSIONS
