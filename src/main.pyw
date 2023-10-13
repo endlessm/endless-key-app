@@ -54,35 +54,11 @@ def set_log():
     # initialize logging before loading any third-party modules, as they may cause logging to get configured.
     logging.basicConfig(level=logging.INFO)
 
-    # Set the root_dir to the path where assets and locale dirs are
-    if getattr(sys, 'frozen', False):
-        # In the app bundle context sys.executable will be:
-        #   On Windows: The Kolibri.exe path
-        #   On macOS: Kolibri.app/Contents/MacOS/python
-        if sys.platform == 'darwin':
-            root_dir = os.path.abspath(os.path.join(os.path.dirname(sys.executable), '..', 'Resources'))
-            extra_python_path = os.path.join(
-                root_dir, 'lib',
-                'python{}.{}'.format(sys.version_info.major, sys.version_info.minor))
-        else:
-            # This env var points to where PyInstaller extracted the sources in single file mode.
-            if hasattr(sys, '_MEIPASS'):
-                root_dir = sys._MEIPASS
-            else:
-                root_dir = os.path.abspath(os.path.dirname(sys.executable))
-            extra_python_path = root_dir
+    # Make sure we send all app output to logs as we have no console to view them on.
+    sys.stdout = LoggerWriter(logging.debug)
+    sys.stderr = LoggerWriter(logging.warning)
 
-        # Make sure we send all app output to logs as we have no console to view them on.
-        sys.stdout = LoggerWriter(logging.debug)
-        sys.stderr = LoggerWriter(logging.warning)
-    else:
-        # In this case we use src/main.py
-        extra_python_path = os.path.abspath(os.path.dirname(__file__))
-        root_dir = os.path.abspath(os.path.join(extra_python_path, '..'))
-
-    assets_root_dir = os.path.join(root_dir, 'assets')
-    locale_root_dir = os.path.join(root_dir, 'locale')
-
+    extra_python_path = EKAPP_DIR
     sys.path.insert(0, extra_python_path)
     sys.path.insert(0, os.path.join(extra_python_path, "kolibri", "dist"))
 
