@@ -46,8 +46,8 @@ jobs:
 
       - name: Prep kolibri dist
         env:
-          KOLIBRI_WHL_URL: 'https://github.com/learningequality/kolibri/releases/download/v0.16.0-beta1/kolibri-0.16.0b1-py2.py3-none-any.whl'
-          KOLIBRI_WHL_FILENAME: "kolibri-0.16.0b1-py2.py3-none-any.whl"
+          KOLIBRI_WHL_URL: 'https://github.com/learningequality/kolibri/releases/download/v0.16.0-beta6/kolibri-0.16.0b6-py2.py3-none-any.whl'
+          KOLIBRI_WHL_FILENAME: "kolibri-0.16.0b6-py2.py3-none-any.whl"
         run: |
           C:\msys64\usr\bin\wget.exe -O $env:KOLIBRI_WHL_FILENAME $env:KOLIBRI_WHL_URL
           pip install $env:KOLIBRI_WHL_FILENAME --target="src"
@@ -80,10 +80,6 @@ jobs:
       - name: Add collections to Kolibri's dist package
         run: |
           7z x collections.zip -osrc/collections
-
-      - name: Patch Kolibri
-        run: |
-          C:\msys64\usr\bin\patch.exe src\kolibri\core\content\tasks.py patches\0001-Add-track-progress-information-to-channelimport.patch
 
       - name: Build
         env:
