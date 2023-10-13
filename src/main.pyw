@@ -115,7 +115,11 @@ class Application:
 
         dev_extra = os.getenv('ENDLESS_KEY_APP_DEVELOPER_EXTRAS', default='0')
         debug_flag = dev_extra == '1'
-        webview.start(self.on_open, args=(window,), debug=debug_flag)
+        webview.start(self.on_open,
+            args=(window,),
+            private_mode=False,
+            storage_path=KOLIBRI_HOME,
+            debug=debug_flag)
 
     def _init_log(self):
         from kolibri.utils.logger import KolibriTimedRotatingFileHandler
