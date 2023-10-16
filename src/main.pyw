@@ -170,6 +170,17 @@ def create_dir(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
+def set_real_kolibri_home():
+    global KOLIBRI_HOME
+
+    # Create a temp file, then get its folder's real path as KOLIBRI_HOME path.
+    fname = os.path.join(KOLIBRI_HOME, str(time.monotonic_ns()))
+    with open(fname, 'x') as f:
+        f.close()
+
+    KOLIBRI_HOME = os.path.dirname(os.path.realpath(fname))
+    os.remove(fname)
+
 def setup_provision():
     # Copy the provision file because Kolibri removes after applying
     provision_file = os.path.join(EKAPP_DIR, 'provision.json')
@@ -186,6 +197,12 @@ def load_env():
     # kolibri can only create one level sub-directory for KOLIBRI_HOME.
     # So, create KOLIBRI_HOME path here.
     create_dir(KOLIBRI_HOME)
+
+    # The %APPDATA% is a mapped virtual path for APPX/MSIX package on Windows.
+    # However, the cookies' storage path created by Windows' native webview
+    # invoked by pywebview is not the mapped virtual path.
+    # https://docs.python.org/3.11/using/windows.html#redirection-of-local-data-registry-and-temporary-paths
+    set_real_kolibri_home()
 
     os.environ['KOLIBRI_HOME'] = KOLIBRI_HOME
     os.environ['DJANGO_SETTINGS_MODULE'] = "kolibri_tools.endless_key_settings"
