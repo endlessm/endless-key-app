@@ -15,7 +15,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-2019
+    runs-on: windows-latest
     strategy:
       matrix:
         architecture: [x64]
@@ -40,45 +40,14 @@ jobs:
           python-version: 3.9
           architecture: ${{ matrix.architecture }}
 
-      - name: Set up Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-          cache: 'yarn'
-          cache-dependency-path: '**/yarn.lock'
-
       - name: Install python requirements
         run: |
-          pip install wheel
-
-      - name: Checkout pyinstaller
-        uses: actions/checkout@v3
-        with:
-          repository: pyinstaller/pyinstaller
-          path: pyinstaller
-          ref: v5.1
-
-      - name: Build pyinstaller bootloader
-        run: |
-          if ("${{ matrix.architecture }}" -eq "x86") {
-            python waf all --target-arch=32bit
-          }
-          else {
-            python waf all
-          }
-        working-directory: pyinstaller/bootloader
-
-      - name: Install pyinstaller
-        run: |
-          python setup.py install
-        working-directory: pyinstaller
-        env:
-          PYINSTALLER_COMPILE_BOOTLOADER: 1
+          pip install pycparser==2.14 pyinstaller wheel pywebview
 
       - name: Prep kolibri dist
         env:
-          KOLIBRI_WHL_URL: 'https://github.com/learningequality/kolibri/releases/download/v0.16.0-beta1/kolibri-0.16.0b1-py2.py3-none-any.whl'
-          KOLIBRI_WHL_FILENAME: "kolibri-0.16.0b1-py2.py3-none-any.whl"
+          KOLIBRI_WHL_URL: 'https://github.com/learningequality/kolibri/releases/download/v0.16.0-beta6/kolibri-0.16.0b6-py2.py3-none-any.whl'
+          KOLIBRI_WHL_FILENAME: "kolibri-0.16.0b6-py2.py3-none-any.whl"
         run: |
           C:\msys64\usr\bin\wget.exe -O $env:KOLIBRI_WHL_FILENAME $env:KOLIBRI_WHL_URL
           pip install $env:KOLIBRI_WHL_FILENAME --target="src"
@@ -112,10 +81,6 @@ jobs:
         run: |
           7z x collections.zip -osrc/collections
 
-      - name: Patch Kolibri
-        run: |
-          C:\msys64\usr\bin\patch.exe src\kolibri\core\content\tasks.py patches\0001-Add-track-progress-information-to-channelimport.patch
-
       - name: Build
         env:
           PYTHONOPTIMIZE: 2
@@ -136,24 +101,6 @@ jobs:
           path: |
             build\main\warn-main.txt
             build\main\xref-main.html
-
-      - name: Install electron-forge
-        working-directory: kolibri-electron
-        run: yarn global add @electron-forge/cli
-
-      - name: Install electron dependencies
-        working-directory: kolibri-electron
-        run: yarn install
-
-      - name: Build electron app
-        working-directory: kolibri-electron
-        run: |
-          if ("${{ matrix.architecture }}" -eq "x86") {
-            yarn make --arch=ia32
-          }
-          else {
-            yarn make
-          }
 
       - name: Kolibri cleanup
         run: |
@@ -199,13 +146,11 @@ jobs:
 
       - name: Create kolibri-windows
         run: |
-          $ElectronDiretory = (Get-Childitem -Path kolibri-electron\out\ -Directory kolibri-electron-win32*)[0]
-          mv $ElectronDiretory kolibri-windows
-
-          mv src/kolibri dist/Kolibri/kolibri
-          mv dist/Kolibri kolibri-windows/
-          mv src/apps-bundle kolibri-windows/resources/app/src/
-          mv src/collections kolibri-windows/resources/app/src/
+          mv src/kolibri dist/kolibri-electron/_internal/
+          mv src/apps-bundle dist/kolibri-electron/_internal/
+          mv src/collections dist/kolibri-electron/_internal/
+          mv src/automatic_provision.json dist/kolibri-electron/_internal/
+          mv dist/kolibri-electron kolibri-windows
 
       - name: Compress
         run: Compress-Archive -Path kolibri-windows\* -DestinationPath kolibri-windows_${{ matrix.architecture }}.zip
@@ -414,7 +359,7 @@ jobs:
   push_to_MS_store:
     needs: package
     if: startsWith(github.ref, 'refs/tags/') || startsWith(inputs.tag_name, 'v')
-    runs-on: windows-2019
+    runs-on: windows-latest
 
     steps:
       - name: Download the package
