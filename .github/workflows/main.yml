@@ -327,20 +327,8 @@ jobs:
             -OutputArtifactPath kolibri-electron.signed.exe `
             -WaitForCompletion
 
-          Submit-SigningRequest `
-            -CIUserToken $env:SIGNPATH_USER_TOKEN `
-            -OrganizationId $env:SIGNPATH_ORG_ID `
-            -ProjectSlug Endless_Apps `
-            -SigningPolicySlug Endless_Apps_Signing_for_Endless_USB_Key `
-            -ArtifactConfigurationSlug Binaries_for_Endless_USB_Key `
-            -InputArtifactPath kolibri-windows/Kolibri/Kolibri.exe `
-            -OutputArtifactPath Kolibri.signed.exe `
-            -WaitForCompletion
-
           rm kolibri-windows/kolibri-electron.exe
-          rm kolibri-windows/Kolibri/Kolibri.exe
           mv kolibri-electron.signed.exe kolibri-windows/kolibri-electron.exe
-          mv Kolibri.signed.exe kolibri-windows/Kolibri/Kolibri.exe
 
           rm kolibri-windows_${{ matrix.architecture }}.zip
 
