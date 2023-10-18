@@ -8,6 +8,7 @@ import time
 import webview
 
 from functools import partial
+from tempfile import mkstemp
 
 from config import KOLIBRI_IP
 from config import KOLIBRI_PORT
@@ -174,11 +175,9 @@ def set_real_kolibri_home():
     global KOLIBRI_HOME
 
     # Create a temp file, then get its folder's real path as KOLIBRI_HOME path.
-    fname = os.path.join(KOLIBRI_HOME, str(time.monotonic_ns()))
-    with open(fname, 'x') as f:
-        f.close()
-
+    fd, fname = mkstemp(dir=KOLIBRI_HOME)
     KOLIBRI_HOME = os.path.dirname(os.path.realpath(fname))
+    os.close(fd)
     os.remove(fname)
 
 def setup_provision():
