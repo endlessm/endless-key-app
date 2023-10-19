@@ -85,8 +85,7 @@ class Application:
         window = webview.create_window(
             'Endless Key',
             self.get_loading_screen(),
-            width=1024,
-            height=768)
+            maximized=True)
 
         window.events.closed += self.on_closed
 
