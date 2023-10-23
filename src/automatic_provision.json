@@ -10,7 +10,7 @@
         "show_download_button_in_learn": true
     },
     "device_settings": {
-        "language_id": "en",
+        "language_id": null,
         "landing_page": "learn",
         "allow_guest_access": true,
         "allow_peer_unlisted_channel_import": true,
