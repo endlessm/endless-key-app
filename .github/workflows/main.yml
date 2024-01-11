@@ -390,36 +390,45 @@ jobs:
           $release_str = Get-Date -Format "yyyyMMdd"
           .\StoreBroker\Extensions\ConvertFrom-ExistingSubmission.ps1 -AppId $APP_ID -Release $release_str -OutPath "MSAppPayload/PDPs"
 
-          # Wipe out the Release string in PDP.xml to avoid the release version folder
-          [xml]$xmlDoc = Get-Content "MSAppPayload/PDPs/en-us/PDP.xml"
-          $xmlDoc.ProductDescription.Release = ""
-          $xmlDoc.Save( "MSAppPayload/PDPs/en-us/PDP.xml" )
+          # Deal every locale's PDP.xml. For example, "en-us/PDP.xml", "es-419/PDP.xml" ...
+          Get-Childitem -Path "MSAppPayload\PDPs\" -Include *.xml -File -Recurse | ForEach-Object {
+            $pdp = $_
+            $pdp_folder = Split-Path -parent $pdp
 
-          echo "Going to create dummy screenshots for Application Payload creation:"
-          $xmlDoc.ProductDescription.ScreenshotCaptions.Caption | ForEach-Object {
-            $dummy_screenshot = "MSAppPayload/PDPs/en-us/" + $_.DesktopImage
-            echo $dummy_screenshot
-            echo NULL > $dummy_screenshot
-          }
+            # Wipe out the Release string in PDP.xml to avoid the release version folder
+            [xml]$xmlDoc = Get-Content $pdp
+            $xmlDoc.ProductDescription.Release = ""
+            $xmlDoc.Save( $pdp )
 
-          echo "Going to create dummy additional assets for Application Payload creation:"
-          $xmlDoc.ProductDescription.AdditionalAssets.ChildNodes.FileName | ForEach-Object {
-            if ( -not $_ ) { return }
-            $dummy_assest = "MSAppPayload/PDPs/en-us/" + $_
-            echo $dummy_assest
-            echo NULL > $dummy_assest
-          }
+            echo "Going to create dummy screenshots for Application Payload creation:"
+            $xmlDoc.ProductDescription.ScreenshotCaptions.Caption | ForEach-Object {
+              if ( -not $_ ) { return }
+              $dummy_screenshot = "$pdp_folder/" + $_.DesktopImage
+              echo $dummy_screenshot
+              echo NULL > $dummy_screenshot
+            }
 
-          echo "Going to create dummy trailers & their images for Application Payload creation:"
-          $xmlDoc.ProductDescription.Trailers.Trailer | ForEach-Object {
-            $dummy_trailer = "MSAppPayload/PDPs/en-us/" + $_.FileName
-            echo $dummy_trailer
-            echo NULL > $dummy_trailer
+            echo "Going to create dummy additional assets for Application Payload creation:"
+            $xmlDoc.ProductDescription.AdditionalAssets.ChildNodes.FileName | ForEach-Object {
+              if ( -not $_ ) { return }
+              $dummy_asset = "$pdp_folder/" + $_
+              echo $dummy_asset
+              echo NULL > $dummy_asset
+            }
 
-            $_.Images.Image | ForEach-Object {
-              $dummy_image = "MSAppPayload/PDPs/en-us/" + $_.FileName
-              echo $dummy_image
-              echo NULL > $dummy_image
+            echo "Going to create dummy trailers & their images for Application Payload creation:"
+            $xmlDoc.ProductDescription.Trailers.Trailer | ForEach-Object {
+              if ( -not $_ ) { return }
+              $dummy_trailer = "$pdp_folder/" + $_.FileName
+              echo $dummy_trailer
+              echo NULL > $dummy_trailer
+
+              $_.Images.Image | ForEach-Object {
+                if ( -not $_ ) { return }
+                $dummy_image = "$pdp_folder/" + $_.FileName
+                echo $dummy_image
+                echo NULL > $dummy_image
+              }
             }
           }
 
