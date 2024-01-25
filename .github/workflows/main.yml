@@ -148,11 +148,11 @@ jobs:
 
       - name: Create kolibri-windows
         run: |
-          mv src/kolibri dist/kolibri-electron/_internal/
-          mv src/apps-bundle dist/kolibri-electron/_internal/
-          mv src/collections dist/kolibri-electron/_internal/
-          mv src/automatic_provision.json dist/kolibri-electron/_internal/
-          mv dist/kolibri-electron kolibri-windows
+          mv src/kolibri dist/endless-key/_internal/
+          mv src/apps-bundle dist/endless-key/_internal/
+          mv src/collections dist/endless-key/_internal/
+          mv src/automatic_provision.json dist/endless-key/_internal/
+          mv dist/endless-key kolibri-windows
 
       - name: Compress
         run: Compress-Archive -Path kolibri-windows\* -DestinationPath kolibri-windows_${{ matrix.architecture }}.zip
@@ -325,12 +325,12 @@ jobs:
             -ProjectSlug Endless_Apps `
             -SigningPolicySlug Endless_Apps_Signing_for_Endless_USB_Key `
             -ArtifactConfigurationSlug Binaries_for_Endless_USB_Key `
-            -InputArtifactPath kolibri-windows/kolibri-electron.exe `
-            -OutputArtifactPath kolibri-electron.signed.exe `
+            -InputArtifactPath kolibri-windows/endless-key.exe `
+            -OutputArtifactPath endless-key.signed.exe `
             -WaitForCompletion
 
-          rm kolibri-windows/kolibri-electron.exe
-          mv kolibri-electron.signed.exe kolibri-windows/kolibri-electron.exe
+          rm kolibri-windows/endless-key.exe
+          mv endless-key.signed.exe kolibri-windows/endless-key.exe
 
           rm kolibri-windows_${{ matrix.architecture }}.zip
 
